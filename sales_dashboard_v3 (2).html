@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>홈런 체험 전환 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0e14;--s1:#15151e;--s2:#1b1b26;--s3:#22222f;
+  --b1:rgba(255,255,255,0.06);--b2:rgba(255,255,255,0.10);--b3:rgba(255,255,255,0.16);
+  --t1:#eeeef8;--t2:#9999b8;--t3:#5a5a78;
+  --purple:#7c6ef5;--purple2:#a99ff7;--purple-bg:rgba(124,110,245,0.12);
+  --teal:#2dd4a0;--teal-bg:rgba(45,212,160,0.10);
+  --coral:#f07060;--coral-bg:rgba(240,112,96,0.10);
+  --amber:#f5a623;--amber-bg:rgba(245,166,35,0.10);
+  --blue:#5b9cf6;--blue-bg:rgba(91,156,246,0.10);
+  --gray:#6b6b88;--radius:12px;--radius-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;font-size:13px;}
+.mono{font-family:'DM Mono',monospace;}
+
+nav{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--b1);background:var(--s1);position:sticky;top:0;z-index:100;}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-icon{width:30px;height:30px;background:var(--purple);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:#fff;}
+.nav-title{font-size:14px;font-weight:500;}
+.nav-sub{font-size:11px;color:var(--t3);margin-top:1px;}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--t2);background:transparent;border:none;transition:all .2s;}
+.nav-tab.active{background:var(--purple-bg);color:var(--purple2);}
+.nav-tab:hover:not(.active){background:var(--s3);color:var(--t1);}
+.nav-meta{font-size:11px;color:var(--t3);font-family:'DM Mono',monospace;}
+
+.page{display:none;padding:18px 28px;}
+.page.active{display:block;}
+.row{display:grid;gap:12px;margin-bottom:12px;}
+.r4{grid-template-columns:repeat(4,1fr);}
+.r3{grid-template-columns:repeat(3,1fr);}
+.r2{grid-template-columns:1fr 1fr;}
+.r21{grid-template-columns:2fr 1fr;}
+.r12{grid-template-columns:1fr 2fr;}
+
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius);padding:14px 16px;}
+.card-title{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+
+.metric-val{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;line-height:1;margin-bottom:5px;}
+.metric-label{font-size:11px;color:var(--t2);}
+.tag{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:500;font-family:'DM Mono',monospace;margin-left:5px;}
+.tag-up{background:var(--teal-bg);color:var(--teal);}
+.tag-down{background:var(--coral-bg);color:var(--coral);}
+
+/* HBAR */
+.hbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.hbar-lbl{min-width:90px;font-size:11px;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hbar-track{flex:1;background:var(--s3);border-radius:3px;height:16px;cursor:pointer;transition:opacity .15s;}
+.hbar-track:hover{opacity:.8;}
+.hbar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,.85);transition:width .5s cubic-bezier(.4,0,.2,1);}
+.hbar-val{min-width:34px;font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);text-align:right;}
+
+/* ─── CHANNEL INSIGHT PAGE ─── */
+/* 1뎁스: 구분 선택 */
+.div-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px;}
+.div-btn{background:var(--s2);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:9px 11px;cursor:pointer;transition:all .2s;}
+.div-btn:hover{border-color:var(--b3);background:var(--s3);}
+.div-btn.active{border-color:var(--purple);background:var(--purple-bg);}
+.div-btn-name{font-size:11px;font-weight:500;color:var(--t1);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.div-btn-rate{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;}
+.div-btn-n{font-size:10px;color:var(--t3);margin-top:1px;font-family:'DM Mono',monospace;}
+
+/* ─── GRADE BUTTONS ─── */
+.ch-btn{background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;transition:all .2s;}
+.ch-btn:hover{background:var(--s3);border-color:var(--b3);}
+.ch-btn-name{font-size:12px;font-weight:500;color:var(--t1);margin-bottom:5px;}
+.ch-btn-rate{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;margin-bottom:4px;}
+.ch-btn-n{font-size:11px;color:var(--t3);font-family:'DM Mono',monospace;}
+
+/* 2뎁스: 세부 채널/장소유형 */
+.sub-section{background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px;}
+.sub-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--b1);}
+.sub-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.sub-title{font-size:15px;font-weight:500;}
+.sub-stats{display:flex;gap:18px;margin-left:auto;}
+.sub-stat{text-align:right;}
+.sub-stat-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;}
+.sub-stat-lbl{font-size:10px;color:var(--t3);}
+
+/* 세부 탭 */
+.sub-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.sub-tab{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;background:var(--s3);border:1px solid var(--b1);color:var(--t2);transition:all .2s;}
+.sub-tab.active{background:var(--s1);border-color:var(--b3);color:var(--t1);}
+
+/* 세부 카드 목록 */
+.sub-list{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.sub-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:11px 13px;cursor:pointer;transition:all .2s;}
+.sub-card:hover{border-color:var(--b3);}
+.sub-card.active{border-color:var(--purple);background:var(--purple-bg);}
+.sub-card-name{font-size:11px;font-weight:500;color:var(--t1);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sub-card-rate{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;}
+.sub-card-meta{font-size:10px;color:var(--t3);margin-top:3px;font-family:'DM Mono',monospace;}
+
+/* 세부 인사이트 패널 */
+.detail-panel{background:var(--s3);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:14px 16px;margin-top:10px;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.detail-grid > div{background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:14px 16px;border-left-width:2px;border-left-style:solid;border-left-color:var(--b2);}
+.detail-section-title{
+  font-size:11px;font-weight:500;color:var(--t1);
+  margin-bottom:8px;letter-spacing:0;
+}
+.detail-text{font-size:12px;color:#c0c0d8;line-height:1.7;}
+.script-box{background:var(--bg);border:1px solid var(--b2);border-radius:6px;padding:10px 13px;margin-top:8px;}
+.script-tag{font-size:10px;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:4px;}
+.script-text{font-size:12px;color:var(--purple2);line-height:1.7;font-style:italic;}
+.warn-box{background:var(--coral-bg);border:1px solid rgba(240,112,96,.2);border-radius:6px;padding:9px 11px;margin-top:8px;font-size:11px;color:#f09090;line-height:1.6;}
+
+/* 인사이트 - 상단 */
+.top-insight{background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;}
+.top-insight-title{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.top-insight-text{font-size:12px;color:#c0c0d8;line-height:1.7;}
+
+/* COMPARE */
+.cmp-row{margin-bottom:10px;}
+.cmp-label{font-size:11px;color:var(--t2);margin-bottom:4px;}
+.cmp-bars{display:flex;flex-direction:column;gap:3px;}
+.cmp-bar{height:9px;border-radius:2px;}
+.cmp-vals{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);margin-top:2px;}
+
+/* FACTOR */
+.factor-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--b1);}
+.factor-row:last-child{border-bottom:none;}
+.f-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#fff;flex-shrink:0;}
+.f-name{flex:1;font-size:12px;}
+.f-bar{width:65px;background:var(--s3);border-radius:2px;height:5px;}
+.f-fill{height:5px;border-radius:2px;}
+.f-b{font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);min-width:30px;text-align:right;}
+
+.pill{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-family:'DM Mono',monospace;}
+.sec-lbl{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--b1);}
+
+/* ─── INSIGHT GRID ─── */
+.ins-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ins-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:14px 16px;border-left-width:2px;border-left-style:solid;}
+.ins-section-title{font-size:11px;font-weight:600;margin-bottom:8px;letter-spacing:0;}
+.ins-text{font-size:12px;color:var(--t2);line-height:1.75;}
+.ins-panel{background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius);padding:16px 18px;}
+.ins-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--b1);}
+.ins-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.ins-ch{font-size:16px;font-weight:500;}
+.ins-stats{display:flex;gap:20px;margin-left:auto;}
+.ins-stat{text-align:right;}
+.ins-stat-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;}
+.ins-stat-lbl{font-size:10px;color:var(--t3);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-icon">HL</div>
+    <div>
+      <div class="nav-title">체험 전환 대시보드</div>
+      <div class="nav-sub">10,707명 · 로지스틱 회귀 AUC 0.81</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('overview',this)">전체 현황</button>
+    <button class="nav-tab" onclick="showPage('channel',this)">유입 구분별 인사이트</button>
+    <button class="nav-tab" onclick="showPage('grade',this)">학년별 인사이트</button>
+    <button class="nav-tab" onclick="showPage('learning',this)">학습 인사이트</button>
+    <button class="nav-tab" onclick="showPage('action',this)">액션 가이드</button>
+  </div>
+  <div class="nav-meta">2026 체험 데이터</div>
+</nav>
+
+<!-- PAGE 1 -->
+<div class="page active" id="page-overview">
+  <div class="row r4" style="margin-top:4px;">
+    <div class="card"><div class="card-title">전체 결제 전환율</div><div class="metric-val" style="color:var(--purple2)">12.6%</div><div class="metric-label">10,707명 중 1,346명 결제</div></div>
+    <div class="card"><div class="card-title">결제자 평균 출석률</div><div class="metric-val" style="color:var(--teal)">86.6%</div><div class="metric-label">미결제자 57.5% <span class="tag tag-up">+29.1%p</span></div></div>
+    <div class="card"><div class="card-title">결제자 평균 수행률</div><div class="metric-val" style="color:var(--teal)">67.9%</div><div class="metric-label">미결제자 29.0% <span class="tag tag-up">+38.9%p</span></div></div>
+    <div class="card"><div class="card-title">결제자 평균 체험일수</div><div class="metric-val" style="color:var(--coral)">5.5일</div><div class="metric-label">미결제자 6.7일 <span class="tag tag-down">짧을수록 전환↑</span></div></div>
+  </div>
+  <div class="row r21">
+    <div class="card">
+      <div class="card-title">유입 구분별 결제율 — 클릭 시 세부 인사이트</div>
+      <div id="overviewBars"></div>
+    </div>
+    <div class="card"><div class="card-title">결제 영향 요인 순위 (|β|)</div><div id="factorList"></div><div id="factorDesc" style="margin-top:12px;"></div></div>
+  </div>
+  <div class="row r2">
+    <div class="card"><div class="card-title">결제자 vs 미결제자 — 체험 행동 비교</div><div id="compareChart"></div></div>
+    <div class="card"><div class="card-title">학년별 결제율</div><div id="gradeBars"></div></div>
+  </div>
+</div>
+
+<!-- PAGE 2: CHANNEL INSIGHTS -->
+<div class="page" id="page-channel">
+  <div style="margin-top:4px;">
+    <div class="sec-lbl">1단계 — 유입 구분 선택</div>
+    <div class="div-grid" id="divGrid"></div>
+    <div id="channelDetail"></div>
+  </div>
+</div>
+
+<!-- PAGE 3: ACTION -->
+<div class="page" id="page-action">
+  <div class="row r2" style="margin-top:4px;">
+    <div class="card">
+      <div class="card-title">결제 예측 시그널</div>
+      <div id="signalGrid"></div>
+    </div>
+    <div class="card"><div class="card-title">체험 타임라인 — 골든타임 액션</div><div id="timeline"></div></div>
+  </div>
+  <div class="row r2">
+    <div class="card"><div class="card-title">해피콜 운영 원칙</div><div id="happycallGuide"></div></div>
+    <div class="card"><div class="card-title">체험상담 품질 기준</div><div id="consultGuide"></div></div>
+  </div>
+</div>
+
+
+<!-- PAGE 4: LEARNING INSIGHTS -->
+<div class="page" id="page-learning">
+  <div style="margin-top:4px;">
+    <div class="row r4">
+      <div class="card"><div class="card-title">결제자 평균 출석률</div><div class="metric-val" style="color:var(--teal)">86.6%</div><div class="metric-label">미결제자 57.5% <span class="tag tag-up">+29.1%p</span></div></div>
+      <div class="card"><div class="card-title">결제자 평균 수행률</div><div class="metric-val" style="color:var(--teal)">67.9%</div><div class="metric-label">미결제자 29.0% <span class="tag tag-up">+38.9%p</span></div></div>
+      <div class="card"><div class="card-title">결제자 완료 학습 수</div><div class="metric-val" style="color:var(--purple2)">14.1개</div><div class="metric-label">미결제자 6.6개 <span class="tag tag-up">2.1배</span></div></div>
+      <div class="card"><div class="card-title">결제자 총 학습시간</div><div class="metric-val" style="color:var(--amber)">394분</div><div class="metric-label">미결제자 261분 <span class="tag tag-up">+51%</span></div></div>
+    </div>
+
+    <div class="row r2">
+      <div class="card">
+        <div class="card-title">출석률 구간별 결제율 — 90% 이상이면 전환율 급상승</div>
+        <div id="attendBars"></div>
+        <div style="margin-top:10px;padding:10px 12px;background:var(--teal-bg);border:1px solid rgba(45,212,160,.2);border-radius:var(--radius-sm);font-size:11px;color:var(--t2);line-height:1.65;">
+          <strong style="color:var(--teal)">핵심 인사이트 ·</strong> 출석률 90% 이상 고객의 결제율은 44.3%로, 30% 이하(0.8%) 대비 57배 차이입니다. 출석률은 결제 의향의 가장 강력한 선행 지표입니다.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">수행률 구간별 결제율 — 80% 이상이면 결제율 46.7%</div>
+        <div id="performBars"></div>
+        <div style="margin-top:10px;padding:10px 12px;background:var(--purple-bg);border:1px solid rgba(124,110,245,.2);border-radius:var(--radius-sm);font-size:11px;color:var(--t2);line-height:1.65;">
+          <strong style="color:var(--purple2)">핵심 인사이트 ·</strong> 수행률 80% 이상 고객의 결제율은 46.7%. 계획한 학습 수(결제 0.94x)와 달리 완료한 학습 수(2.14x)가 차이를 만듭니다. 많이 계획하는 것보다 적게라도 끝내는 것이 중요합니다.
+        </div>
+      </div>
+    </div>
+
+    <div class="row r2">
+      <div class="card">
+        <div class="card-title">총 학습시간 구간별 결제율</div>
+        <div id="timeBars"></div>
+        <div style="margin-top:10px;padding:10px 12px;background:var(--amber-bg);border:1px solid rgba(245,166,35,.2);border-radius:var(--radius-sm);font-size:11px;color:var(--t2);line-height:1.65;">
+          <strong style="color:var(--amber)">핵심 인사이트 ·</strong> 4시간 이상 학습한 고객의 결제율은 22~24%로 수렴합니다. 1시간 미만(3.5%)과는 7배 차이. 체험 기간 총 4시간 학습이 하나의 전환 기준점입니다.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row r2">
+      <div class="card">
+        <div class="card-title">과목별 결제율 — 어떤 과목을 체험했을 때 결제율이 높은가</div>
+        <div id="subjectBars"></div>
+        <div style="margin-top:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);font-size:11px;color:var(--t2);line-height:1.65;">
+          <strong style="color:var(--t1)">해석 주의 ·</strong> 과목 자체가 결제를 유발한다기보다, 해당 과목에 관심 있는 학부모층(예: 영어·사회·과학)이 학습 의향이 높은 경향을 반영합니다.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">코스 유형별 결제율 — 리틀 · 초등 · 중등 비교</div>
+        <div style="display:flex;gap:6px;margin-bottom:12px;" id="stageTabs">
+          <button class="sub-tab active" onclick="switchStage('초등',this)">초등</button>
+          <button class="sub-tab" onclick="switchStage('중등',this)">중등</button>
+        </div>
+        <div id="courseBars"></div>
+        <div id="courseInsight" style="margin-top:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);font-size:11px;color:var(--t2);line-height:1.65;"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-title">학습 인사이트 종합 — 세일즈 액션 포인트</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;" id="learningActions"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PAGE: GRADE INSIGHTS -->
+<div class="page" id="page-grade">
+  <div style="margin-top:4px;">
+    <div class="sec-lbl">학년 그룹 선택 — 해당 학년의 상담 텍스트 기반 인사이트가 표시됩니다</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-bottom:14px;" id="gradeGrid"></div>
+    <div id="gradeDetail"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────
+const DIVS = [
+  { name:'소개', rate:50.8, n:417, paid:212, contrib:15.8, color:'#7c6ef5',
+    attend:73.7, perform:61.3, days:8.8,
+    subType:'channel',
+    overallInsight:'지인·관리교사가 직접 추천한 고객. OR=37배로 전체 채널 압도적 1위. 신뢰가 이미 형성된 상태라 설득보다 확인이 목표.',
+    subs:[
+      { name:'지인소개(관리교사)', n:400, paid:205, rate:51.2, days:8.9, attend:73.6, perform:62.0,
+        who:'담당 관리교사가 학부모에게 직접 추천한 케이스. 교사 신뢰도가 구매 결정에 직결됩니다.',
+        how:'① 첫 마디는 반드시 소개자 이름으로 시작하세요. "○○ 선생님이 추천해주셨군요. 어떤 점이 좋다고 하시던가요?" — 소개자 관계를 신뢰 근거로 활용합니다. ② 체험 D+1에 아이 반응을 먼저 물어보세요. 긍정이면 D+2에 바로 결제 제안해도 됩니다. ③ 형제 있는 가정은 첫 상담에서 형제 할인 구조를 미리 안내하세요. 결제 결정 속도가 빨라집니다.',
+        script:'"안녕하세요, ○○ 선생님께서 소개해주셨군요. 선생님이 아이를 잘 보셨나봐요. 체험 이틀째인데 아이 반응이 어떤가요?"',
+        warn:null },
+    ]
+  },
+  { name:'브랜드 검색', rate:31.4, n:481, paid:151, contrib:11.2, color:'#5b9cf6',
+    attend:73.4, perform:45.7, days:6.0,
+    subType:'none',
+    overallInsight:'홈런을 이미 알고 검색해서 들어온 고의도 고객. 경쟁사 비교나 가격·혜택 최종 확인 목적이 많습니다. 세부 채널 분리 없이 단일 접근.',
+    subs:[
+      { name:'브랜드 검색_네이버(뉴)', n:481, paid:151, rate:31.4, days:6.0, attend:73.4, perform:45.7,
+        who:'네이버에서 "홈런" 브랜드명을 직접 검색한 고객. 이미 제품을 알고 비교·확인하러 온 상태.',
+        how:'① "어떤 부분이 궁금하셔서 신청하셨어요?"로 시작해 이미 아는 내용은 생략하세요. 브랜드 검색 고객에게 기초 설명은 역효과입니다. ② 경쟁사와 비교 중인 경우가 많으니 D+1에 "다른 서비스도 보고 계신가요?"로 확인 후, 경쟁사 대비 차별점(북카페 무료, 교과서 출판사 연계)을 핀포인트로 제시하세요. ③ 출석률이 이미 높은 고객에게는 D+3을 넘기지 말고 혜택과 함께 결제를 제안하세요.',
+        script:'"홈런 검색해서 알아보셨군요. 혹시 특별히 비교해보고 계신 부분 있으세요? 가격인지, 커리큘럼인지, 기기 관련인지 궁금한 부분부터 말씀드릴게요."',
+        warn:null },
+    ]
+  },
+  { name:'홈페이지', rate:31.2, n:288, paid:90, contrib:6.7, color:'#5b9cf6',
+    attend:65.4, perform:40.9, days:5.9,
+    subType:'none',
+    overallInsight:'홈페이지 상세 내용을 충분히 읽고 직접 신청한 고객. 이미 본 내용은 건너뛰고 온보딩 단계로 빠르게 넘어가는 것이 효과적.',
+    subs:[
+      { name:'홈페이지 직접 신청', n:288, paid:90, rate:31.2, days:5.9, attend:65.4, perform:40.9,
+        who:'홈페이지 무료체험 페이지를 통해 직접 신청. 제품 정보를 충분히 검토한 상태.',
+        how:'① 홈페이지를 직접 찾아온 고객은 이미 학습 필요성을 인지한 상태입니다. 설득보다 온보딩 속도를 높이는 것이 우선입니다. ② 첫 통화에서 교과서 출판사 설정을 직접 완료해 드리세요. ’학교 수업 그대로 따라가는 설정’이 됐다는 확인이 결제로 이어집니다. ③ D+2에 단원평가·기초학력 진단을 직접 체험하도록 유도한 뒤, "지금 어느 부분이 부족한지 바로 보이시죠?"로 이어가세요.',
+        script:'"홈페이지에서 무료체험 신청해주셨네요. 어떤 부분이 마음에 드셔서 신청하셨어요? 그 부분 중심으로 체험 설계를 도와드릴게요."',
+        warn:null },
+    ]
+  },
+  { name:'키워드 검색', rate:29.2, n:240, paid:70, contrib:5.2, color:'#5b9cf6',
+    attend:67.7, perform:43.0, days:5.9,
+    subType:'none',
+    overallInsight:'"초등 학습지", "태블릿 학습" 등 카테고리 키워드로 검색. 홈런을 처음 알게 된 경우도 있어 학습 문제 해결 자체에 관심.',
+    subs:[
+      { name:'SA_네이버(뉴)', n:240, paid:70, rate:29.2, days:5.9, attend:67.7, perform:43.0,
+        who:'학습 관련 키워드 검색으로 유입. 경쟁 제품과 비교 중인 경우가 많습니다.',
+        how:'① 첫 통화에서 어떤 검색어로 들어왔는지 파악하세요. 국어·사과·역사 키워드면 해당 과목 콘텐츠를 먼저 보여주세요. ② 타사 동시 체험 중인지 D+1에 확인하세요. "다른 서비스도 보고 계신가요?" — 비교 중이면 차별점을 빠르게 제시해야 합니다. ③ 출석률 확인이 최우선입니다. D+2 기준 출석 0이면 조기에 원인을 파악하고 개입하세요. 방치하면 회수로 이어집니다.',
+        script:'"요즘 학습 관련해서 어떤 부분이 고민이셔서 알아보고 계세요? 학년에 맞게 어떻게 도움이 될 수 있는지 말씀드릴게요."',
+        warn:null },
+    ]
+  },
+  { name:'교육 서비스', rate:13.8, n:623, paid:86, contrib:6.4, color:'#2dd4a0',
+    attend:65.0, perform:37.5, days:6.3,
+    subType:'channel',
+    overallInsight:'하이클래스·키즈노트 등 학부모 앱 유입. 채널별로 전환율 차이가 크므로 세부 채널별 접근이 중요합니다.',
+    subs:[
+      { name:'하이클래스 (초등)', n:220, paid:47, rate:21.4, days:6.1, attend:66.7, perform:40.8,
+        who:'초등 학부모 학급 앱 하이클래스를 통한 광고 유입. 학교 알림을 확인하다 노출된 케이스로, 자녀 교육에 적극적인 학부모층.',
+        how:'① 광고 노출 유입이 많으므로 첫 통화에서 학습 의향을 빠르게 파악하세요. "어떤 과목 때문에 신청하셨어요?"로 구체적 니즈가 있는지 확인합니다. ② 의향이 낮은 경우 억지로 설득하지 마세요. 대신 아이가 직접 콘텐츠를 탐색하게 하고, D+2에 아이 반응을 묻는 것이 더 효과적입니다. ③ 하이클래스 유입이면 "선생님 알림장 보다 아셨군요, 학교 교과서 그대로 따라가는 방식이에요"로 연결하세요.',
+        script:'"하이클래스에서 보시고 신청해주셨군요. 학교 수업이랑 연계가 잘 되는지 궁금하셨어요? 교과서 그대로 따라가는 방식이라 아이가 수업 미리 예습하는 효과가 있어요."',
+        warn:null },
+      { name:'키즈노트 (리틀)', n:37, paid:6, rate:16.2, days:6.4, attend:68.8, perform:46.7,
+        who:'유아 알림장 앱 키즈노트를 통한 유입. 미취학 자녀를 둔 학부모로, 학습 시작 시점을 고민 중인 케이스.',
+        how:'① 광고 노출 유입이 많으므로 첫 통화에서 학습 의향을 빠르게 파악하세요. "어떤 과목 때문에 신청하셨어요?"로 구체적 니즈가 있는지 확인합니다. ② 의향이 낮은 경우 억지로 설득하지 마세요. 대신 아이가 직접 콘텐츠를 탐색하게 하고, D+2에 아이 반응을 묻는 것이 더 효과적입니다. ③ 하이클래스 유입이면 "선생님 알림장 보다 아셨군요, 학교 교과서 그대로 따라가는 방식이에요"로 연결하세요.',
+        script:'"키즈노트에서 보시고 신청해주셨군요. 곧 초등학교 가시나요? 미리 학습 습관 잡아두시려는 분들이 많이 체험해보세요."',
+        warn:null },
+      { name:'키즈노트 (초등)', n:338, paid:30, rate:8.9, days:6.4, attend:63.9, perform:35.7,
+        who:'초등 자녀를 둔 학부모. 전환율 8.9%로 하이클래스 대비 낮습니다. 앱 사용 맥락이 달라 구매 의향 수준이 낮은 편.',
+        how:'① 광고 노출 유입이 많으므로 첫 통화에서 학습 의향을 빠르게 파악하세요. "어떤 과목 때문에 신청하셨어요?"로 구체적 니즈가 있는지 확인합니다. ② 의향이 낮은 경우 억지로 설득하지 마세요. 대신 아이가 직접 콘텐츠를 탐색하게 하고, D+2에 아이 반응을 묻는 것이 더 효과적입니다. ③ 하이클래스 유입이면 "선생님 알림장 보다 아셨군요, 학교 교과서 그대로 따라가는 방식이에요"로 연결하세요.',
+        script:'"키즈노트에서 보시고 신청해주셨네요. 아이가 어제 학습 들어가봤어요? 오늘 수학 딱 한 단원만 해보시면 어떤 느낌인지 바로 아실 거예요."',
+        warn:'전환율 8.9%로 교육 서비스 내 하위. 출석·수행이 높을 때만 결제 대화로 넘어가고, 낮으면 학습 유도 먼저.' },
+    ]
+  },
+  { name:'지사사업본부', rate:11.0, n:2327, paid:256, contrib:19.0, color:'#f5a623',
+    attend:57.9, perform:29.6, days:6.4,
+    subType:'place',
+    overallInsight:'볼륨 최대(2,327명), 결제 기여 21.8%로 전체 1위. 장소유형별로 전환율이 다르므로 현장 유형에 따라 접근을 달리해야 합니다.',
+    subs:[
+      { name:'서점', n:450, paid:59, rate:13.1, days:6.4, attend:60.3, perform:29.4,
+        who:'교보문고·영풍문고 등 서점 내 홈런 체험 코너에서 상담받은 고객. 책을 사러 왔다가 노출된 케이스로, 학습에 관심이 높은 학부모층.',
+        how:'① 현장 당일이 골든타임입니다. 기기 배송 완료 문자와 함께 당일 로그인 유도 문자를 보내세요. 귀가 후 24시간 내 로그인이 없으면 회수 가능성이 높습니다. ② D+1 전화에서 "어제 아이가 한번 눌러봤나요?"로 시작하세요. 반응이 있으면 그 콘텐츠를 중심으로 학습 설정을 완료해 드리세요. ③ 사용기기 40% 할인과 혜택 마감 날짜를 D+1에 반드시 안내하세요. 현장 유입 고객은 마감 압박이 가장 효과적입니다.',
+        script:'"서점에서 체험해보시고 신청해주셨군요. 혹시 그날 어떤 코너 보시다가 들르셨어요? 아이가 어떤 과목을 더 챙겨주고 싶으세요?"',
+        warn:null },
+      { name:'박람회', n:100, paid:13, rate:13.0, days:6.4, attend:56.8, perform:29.6,
+        who:'키즈 박람회·교육 박람회에서 상담받은 고객. 교육 정보를 적극적으로 수집하는 층으로, 여러 업체와 비교 중인 경우가 많습니다.',
+        how:'① 현장 당일이 골든타임입니다. 기기 배송 완료 문자와 함께 당일 로그인 유도 문자를 보내세요. 귀가 후 24시간 내 로그인이 없으면 회수 가능성이 높습니다. ② D+1 전화에서 "어제 아이가 한번 눌러봤나요?"로 시작하세요. 반응이 있으면 그 콘텐츠를 중심으로 학습 설정을 완료해 드리세요. ③ 사용기기 40% 할인과 혜택 마감 날짜를 D+1에 반드시 안내하세요. 현장 유입 고객은 마감 압박이 가장 효과적입니다.',
+        script:'"박람회에서 체험해보시고 신청해주셨군요. 다른 곳도 많이 보셨을 텐데, 홈런이 어떤 점이 달라 보이셨어요?"',
+        warn:null },
+      { name:'마트', n:187, paid:21, rate:11.2, days:6.4, attend:55.6, perform:27.9,
+        who:'대형마트 내 체험 코너. 쇼핑 중 우연히 노출된 케이스가 많아 구매 의향 수준이 낮은 편.',
+        how:'① 현장 당일이 골든타임입니다. 기기 배송 완료 문자와 함께 당일 로그인 유도 문자를 보내세요. 귀가 후 24시간 내 로그인이 없으면 회수 가능성이 높습니다. ② D+1 전화에서 "어제 아이가 한번 눌러봤나요?"로 시작하세요. 반응이 있으면 그 콘텐츠를 중심으로 학습 설정을 완료해 드리세요. ③ 사용기기 40% 할인과 혜택 마감 날짜를 D+1에 반드시 안내하세요. 현장 유입 고객은 마감 압박이 가장 효과적입니다.',
+        script:'"마트에서 체험해보시고 신청해주셨네요. 아이가 그날 재밌어 하던가요? 집에서 한 번 더 해보면 훨씬 실감이 날 텐데, 오늘 저녁에 같이 들어가 보세요."',
+        warn:'출석률 55.6%·수행률 27.9%로 전체 하위권. 쇼핑 중 즉흥적 체험 신청이 많아 집에 돌아간 후 관심이 식는 패턴. 당일 로그인 유도 문자가 중요.' },
+      { name:'복합문화공간', n:539, paid:50, rate:9.3, days:6.5, attend:54.5, perform:26.6,
+        who:'키즈카페·테마파크·아쿠아리움 내 체험 코너. 놀러 갔다가 노출된 케이스로 구매 의향이 가장 낮은 유형.',
+        how:'① 현장 당일이 골든타임입니다. 기기 배송 완료 문자와 함께 당일 로그인 유도 문자를 보내세요. 귀가 후 24시간 내 로그인이 없으면 회수 가능성이 높습니다. ② D+1 전화에서 "어제 아이가 한번 눌러봤나요?"로 시작하세요. 반응이 있으면 그 콘텐츠를 중심으로 학습 설정을 완료해 드리세요. ③ 사용기기 40% 할인과 혜택 마감 날짜를 D+1에 반드시 안내하세요. 현장 유입 고객은 마감 압박이 가장 효과적입니다.',
+        script:'"키즈카페에서 체험해보시고 신청해주셨네요. 아이가 재밌어 했나요? 사실 집에서 하는 게 훨씬 더 몰입이 되거든요. 오늘 저녁에 한 번 같이 해보세요."',
+        warn:'출석률 54.5%·수행률 26.6%로 전체 최하위 수준. 놀이 환경 노출이라 학습 전환율이 낮습니다. 리소스 배분 우선순위를 낮추고 출석 확인 후 선별 관리 권장.' },
+      { name:'학교', n:347, paid:37, rate:10.7, days:6.4, attend:56.7, perform:31.6,
+        who:'학교 행사·엑스포에서 노출된 고객. 학부모로서 학교 커뮤니티에 있어 교육 관심도는 높지만 구매까지 이어지는 비율은 중간 수준.',
+        how:'① 현장 당일이 골든타임입니다. 기기 배송 완료 문자와 함께 당일 로그인 유도 문자를 보내세요. 귀가 후 24시간 내 로그인이 없으면 회수 가능성이 높습니다. ② D+1 전화에서 "어제 아이가 한번 눌러봤나요?"로 시작하세요. 반응이 있으면 그 콘텐츠를 중심으로 학습 설정을 완료해 드리세요. ③ 사용기기 40% 할인과 혜택 마감 날짜를 D+1에 반드시 안내하세요. 현장 유입 고객은 마감 압박이 가장 효과적입니다.',
+        script:'"학교 행사에서 보시고 신청해주셨군요. 아이 담임 선생님도 알고 계세요? 학교 교과서 기반이라 수업 예습복습에 딱이에요."',
+        warn:null },
+      { name:'유치원', n:261, paid:28, rate:10.7, days:6.5, attend:62.2, perform:29.6,
+        who:'유치원 연계 체험 행사에서 노출된 고객. 미취학~초등 저학년 학부모로, 학습 습관 형성 시기에 관심이 높습니다.',
+        how:'① 현장 당일이 골든타임입니다. 기기 배송 완료 문자와 함께 당일 로그인 유도 문자를 보내세요. 귀가 후 24시간 내 로그인이 없으면 회수 가능성이 높습니다. ② D+1 전화에서 "어제 아이가 한번 눌러봤나요?"로 시작하세요. 반응이 있으면 그 콘텐츠를 중심으로 학습 설정을 완료해 드리세요. ③ 사용기기 40% 할인과 혜택 마감 날짜를 D+1에 반드시 안내하세요. 현장 유입 고객은 마감 압박이 가장 효과적입니다.',
+        script:'"유치원 행사에서 보시고 신청해주셨네요. 몇 학년 올라가세요? 이 시기가 학습 습관 잡기 딱 좋을 때거든요. 억지로 하는 게 아니라 게임처럼 시작할 수 있어요."',
+        warn:null },
+    ]
+  },
+  { name:'B2B 제휴', rate:10.0, n:592, paid:59, contrib:4.4, color:'#f07060',
+    attend:61.0, perform:32.0, days:6.3,
+    subType:'channel',
+    overallInsight:'제휴사별 전환율 편차가 큽니다(0~30%). 슈퍼브이(30.2%)와 키자니아(14.9%)는 관리 대상, 종근당은 볼륨은 크지만 전환율이 낮아 선별 관리가 필요합니다.',
+    subs:[
+      { name:'슈퍼브이', n:43, paid:13, rate:30.2, days:5.5, attend:75.9, perform:51.4,
+        who:'슈퍼브이 앱 연계 유입. 출석률 75.9%·수행률 51.4%로 B2B 제휴 내 압도적 1위. 앱 사용층의 학습 의향이 높습니다.',
+        how:'① 슈퍼브이 유입이면 "슈퍼브이는 몇 학년까지 하셨어요?"로 시작하세요. 약정 종료 시점과 현재 학년을 파악한 뒤 ’다음 단계는 홈런’ 연결 메시지를 사용하세요. ② 종근당·키자니아 유입은 사은품 목적 비율이 높습니다. 첫 통화에서 학습 니즈 확인 후 의향이 낮으면 리소스를 최소화하고, 출석 여부만 D+2에 확인하세요. ③ 결제 가능성이 높은 슈퍼브이 고객에게는 기기 보유 할인과 형제 할인을 D+2에 함께 제시하세요.',
+        script:'"슈퍼브이에서 알게 되셨군요. 아이가 체험 잘 하고 있던데요, 이틀 연속 들어갔더라고요. 이 기세로 바로 시작해보시는 건 어떠세요?"',
+        warn:null },
+      { name:'키자니아', n:47, paid:7, rate:14.9, days:6.3, attend:63.5, perform:28.6,
+        who:'키자니아 체험관 연계 유입. 체험형 공간에서 노출된 고객으로 학습 흥미를 보이나 수행률이 낮습니다.',
+        how:'① 슈퍼브이 유입이면 "슈퍼브이는 몇 학년까지 하셨어요?"로 시작하세요. 약정 종료 시점과 현재 학년을 파악한 뒤 ’다음 단계는 홈런’ 연결 메시지를 사용하세요. ② 종근당·키자니아 유입은 사은품 목적 비율이 높습니다. 첫 통화에서 학습 니즈 확인 후 의향이 낮으면 리소스를 최소화하고, 출석 여부만 D+2에 확인하세요. ③ 결제 가능성이 높은 슈퍼브이 고객에게는 기기 보유 할인과 형제 할인을 D+2에 함께 제시하세요.',
+        script:'"키자니아에서 체험해보셨군요. 아이가 어떤 직업 체험 좋아하던가요? 그거랑 연결된 학습 콘텐츠가 홈런에도 있거든요."',
+        warn:'수행률 28.6%로 낮습니다. 체험 참여 유도를 먼저 하고 반응 확인 후 결제 제안 순서로 진행하세요.' },
+      { name:'종근당건강 (초등)', n:269, paid:22, rate:8.2, days:6.4, attend:60.6, perform:32.7,
+        who:'종근당건강 제휴 사은품 혜택으로 유입된 초등 학부모. 건강보조식품 구매 고객으로, 교육보다 건강에 관심이 높은 층이 다수입니다.',
+        how:'① 슈퍼브이 유입이면 "슈퍼브이는 몇 학년까지 하셨어요?"로 시작하세요. 약정 종료 시점과 현재 학년을 파악한 뒤 ’다음 단계는 홈런’ 연결 메시지를 사용하세요. ② 종근당·키자니아 유입은 사은품 목적 비율이 높습니다. 첫 통화에서 학습 니즈 확인 후 의향이 낮으면 리소스를 최소화하고, 출석 여부만 D+2에 확인하세요. ③ 결제 가능성이 높은 슈퍼브이 고객에게는 기기 보유 할인과 형제 할인을 D+2에 함께 제시하세요.',
+        script:'"종근당건강에서 신청해주셨네요. 아이가 체험 들어가봤어요? 처음엔 수학이나 국어 중 하나만 해보시면 어떤 스타일인지 딱 아실 거예요."',
+        warn:'전환율 8.2%로 낮습니다. 볼륨(269명)이 가장 많지만 실제 결제 기여는 낮습니다. 2일 미접속 고객 조기 포기, 접속 고객 집중 관리 전략 권장.' },
+      { name:'종근당건강 (중등)', n:30, paid:1, rate:3.3, days:6.4, attend:49.7, perform:12.3,
+        who:'종근당건강 제휴 중등 학부모. 출석률 49.7%·수행률 12.3%로 전체 채널 중 최하위 수준.',
+        how:'① 슈퍼브이 유입이면 "슈퍼브이는 몇 학년까지 하셨어요?"로 시작하세요. 약정 종료 시점과 현재 학년을 파악한 뒤 ’다음 단계는 홈런’ 연결 메시지를 사용하세요. ② 종근당·키자니아 유입은 사은품 목적 비율이 높습니다. 첫 통화에서 학습 니즈 확인 후 의향이 낮으면 리소스를 최소화하고, 출석 여부만 D+2에 확인하세요. ③ 결제 가능성이 높은 슈퍼브이 고객에게는 기기 보유 할인과 형제 할인을 D+2에 함께 제시하세요.',
+        script:'"체험 시작하셨는데, 아이가 한 번이라도 들어가봤어요? 중등은 내신 관련 콘텐츠가 많아서 한 번만 봐도 도움이 되거든요."',
+        warn:'전환율 3.3%, 수행률 12.3%로 투자 대비 효율이 낮습니다. 콜 리소스 최소화 권장.' },
+    ]
+  },
+  { name:'기타채널', rate:6.9, n:1905, paid:131, contrib:9.7, color:'#888780',
+    attend:61.1, perform:31.0, days:6.4,
+    subType:'channel',
+    overallInsight:'포인트·카드 혜택 연계 유입이 대부분. 전환율 6.9%로 전체 최하위지만 볼륨이 커서 결제 기여 11.2%를 차지합니다. 채널 간 편차가 크므로 선별 관리가 핵심.',
+    subs:[
+      { name:'하나카드', n:15, paid:4, rate:26.7, days:6.3, attend:70.3, perform:44.7,
+        who:'하나카드 혜택 연계 유입. 기타채널 중 전환율 1위(26.7%). 출석률·수행률도 양호해 실질적 구매 의향이 높은 편.',
+        how:'① 첫 통화에서 유입 경로를 확인하세요. 하나카드·포인트 연계 고객은 구매 의향이 상대적으로 높으니 A등급으로 관리하세요. ② 사은품·이벤트 목적 고객이 많으므로 D+2까지 로그인이 없으면 회수 처리를 고려하고, 리소스를 의향 있는 고객에게 집중하세요. ③ 로그인은 했지만 출석이 낮은 고객에게는 특정 콘텐츠(아이 관심사)를 추천 문자로 보내 재참여를 유도하세요.',
+        script:'"하나카드 혜택으로 신청해주셨네요. 아이가 체험 잘 들어가고 있던데, 이번에 같이 시작해보시는 건 어떠세요?"',
+        warn:null },
+      { name:'KT', n:41, paid:7, rate:17.1, days:6.1, attend:63.4, perform:35.7,
+        who:'KT 통신사 연계 유입. 통신 요금제 혜택으로 알게 된 경우가 많아 교육 관심도가 중간 수준.',
+        how:'① 첫 통화에서 유입 경로를 확인하세요. 하나카드·포인트 연계 고객은 구매 의향이 상대적으로 높으니 A등급으로 관리하세요. ② 사은품·이벤트 목적 고객이 많으므로 D+2까지 로그인이 없으면 회수 처리를 고려하고, 리소스를 의향 있는 고객에게 집중하세요. ③ 로그인은 했지만 출석이 낮은 고객에게는 특정 콘텐츠(아이 관심사)를 추천 문자로 보내 재참여를 유도하세요.',
+        script:'"KT를 통해 신청해주셨군요. 혹시 요금제 혜택으로 알게 되셨어요? 아이가 어제 체험 들어가봤어요?"',
+        warn:null },
+      { name:'L포인트', n:271, paid:23, rate:8.5, days:6.5, attend:58.0, perform:28.3,
+        who:'롯데멤버스 L포인트 LMS 문자 연계 유입. 포인트 소진·사은품 목적이 주된 동기입니다.',
+        how:'① 첫 통화에서 유입 경로를 확인하세요. 하나카드·포인트 연계 고객은 구매 의향이 상대적으로 높으니 A등급으로 관리하세요. ② 사은품·이벤트 목적 고객이 많으므로 D+2까지 로그인이 없으면 회수 처리를 고려하고, 리소스를 의향 있는 고객에게 집중하세요. ③ 로그인은 했지만 출석이 낮은 고객에게는 특정 콘텐츠(아이 관심사)를 추천 문자로 보내 재참여를 유도하세요.',
+        script:'"L포인트 혜택으로 신청해주셨네요. 아이가 어제 들어가봤어요? 오늘 저녁에 수학 딱 한 단원만 같이 해보시면 어떤지 바로 아실 거예요."',
+        warn:'볼륨 271명으로 기타채널 내 최대이나 전환율 8.5%, 수행률 28.3%로 낮습니다. 출석 2일 미확인 고객은 문자 전환 후 콜 리소스를 절약하세요.' },
+      { name:'CJ ONE', n:88, paid:6, rate:6.8, days:6.6, attend:59.2, perform:28.0,
+        who:'CJ ONE 포인트 연계 유입. 전환율 6.8%로 평균 이하. 포인트 소진 목적 유입이 대다수.',
+        how:'① 첫 통화에서 유입 경로를 확인하세요. 하나카드·포인트 연계 고객은 구매 의향이 상대적으로 높으니 A등급으로 관리하세요. ② 사은품·이벤트 목적 고객이 많으므로 D+2까지 로그인이 없으면 회수 처리를 고려하고, 리소스를 의향 있는 고객에게 집중하세요. ③ 로그인은 했지만 출석이 낮은 고객에게는 특정 콘텐츠(아이 관심사)를 추천 문자로 보내 재참여를 유도하세요.',
+        script:'"CJ ONE 혜택으로 신청해주셨네요. 아이가 체험 들어가봤어요? 관심 있는 과목이 있으면 먼저 그것부터 해보시는 게 좋아요."',
+        warn:'전환율 6.8%, 수행률 28.0%. 출석 여부로 빠르게 판별 후 무반응 고객은 문자 1회만 발송 권장.' },
+    ]
+  },
+];
+
+const FACTORS = [
+  {name:'유입 구분',        b:3.63, c:'#7c6ef5'},
+  {name:'학년',            b:0.99, c:'#f5a623'},
+  {name:'인입구분(체험DB)', b:0.87, c:'#5b9cf6'},
+  {name:'체험일수',         b:0.85, c:'#f07060', neg:true, negLabel:'길수록 결제↓'},
+  {name:'수행률',           b:0.64, c:'#2dd4a0'},
+  {name:'출석률',           b:0.63, c:'#2dd4a0'},
+  {name:'해피콜 통화완료',  b:0.29, c:'#2dd4a0'},
+  {name:'체험상담 통화시간',b:0.16, c:'#2dd4a0'},
+  {name:'지역',             b:0,    c:'#3a3a52', insig:true},
+];
+
+const FACTOR_DETAIL = [
+  { or:"소개 결제율 50.8% / 브랜드검색 31.4% / 기타채널 6.9%",
+    desc:"어디서 들어왔는지가 결제를 가르는 가장 강력한 요인입니다. 지인·교사 소개로 온 고객은 10명 중 5명이 결제하지만, 포인트·사은품 혜택으로 온 고객은 10명 중 1명도 안 됩니다. 이미 주변에서 '좋다'는 이야기를 듣고 온 고객은 설득할 필요 없이 스스로 결제 결정을 내립니다. 이벤트 유입 볼륨을 늘리는 것보다 소개 1건을 더 만드는 게 훨씬 효율적인 이유입니다." },
+  { or:"초3·초5·중2 결제율 약 20% / 미취학 5~8%",
+    desc:"초등 3학년, 5학년, 중학교 2학년에서 결제율이 가장 높습니다. 세 학년의 공통점은 '이제 뭔가 해야 할 것 같다'는 불안감이 생기는 시점이라는 것입니다. 초3은 교과가 본격적으로 어려워지고, 초5는 중학교 준비가 시작되고, 중2는 내신이 본격화됩니다. 반면 4~7세 미취학 아동은 아직 필요성을 느끼지 못하는 학부모가 많아 결제율이 낮습니다." },
+  { or:"재체험 고객 결제율 13.7% / 신규 고객 12.3%",
+    desc:"예전에 홈런을 한 번 써봤던 고객이 다시 체험하러 오면, 처음 오는 고객보다 결제할 가능성이 2.4배 높습니다. 한 번 직접 써봤기 때문에 낯섦에 대한 거부감이 없고, 다시 신청했다는 것 자체가 관심이 있다는 신호입니다. 만료 고객에게 재체험을 권유하는 캠페인이 실제로 효과가 있음을 데이터로 확인한 결과입니다." },
+  { or:"결제자 평균 5.5일 / 미결제자 평균 6.7일",
+    desc:"체험 기간이 짧을수록 결제율이 높습니다. 그런데 이걸 '짧게 체험시켜야 결제된다'로 읽으면 잘못된 해석입니다. 정확히는 '살 마음이 있는 고객이 짧게 쓰고 바로 결제한다'는 뜻입니다. 7일을 꽉 채우는 고객은 처음부터 망설이고 있었던 경우가 많습니다. 따라서 체험 초반 2~3일 안에 긍정 반응을 보이는 고객을 빠르게 포착하는 것이 핵심입니다." },
+  { or:"결제자 평균 67.9% / 미결제자 평균 29.0%",
+    desc:"체험 중 계획된 학습을 실제로 얼마나 완료했는지를 나타냅니다. 결제한 고객은 10번 계획 중 7번을 완료했지만, 결제 안 한 고객은 3번밖에 못 했습니다. 아이가 학습을 열심히 했다는 것은 재미있거나 효과가 있다고 느꼈다는 뜻이고, 이것이 학부모의 결제 결정으로 이어집니다. 수행률이 낮은 고객은 이탈 직전 신호로 봐야 합니다." },
+  { or:"결제자 평균 86.6% / 미결제자 평균 57.5%",
+    desc:"체험 기간 중 실제로 앱에 접속해 학습한 날의 비율입니다. 결제 고객은 체험 기간의 87%를 접속했지만, 미결제 고객은 57%에 그쳤습니다. 출석률은 수행률보다 더 일찍 확인할 수 있어서, 체험 시작 2일차만 봐도 이 고객이 결제할 가능성이 있는지 없는지 예측이 됩니다. 출석률 90% 이상 고객 10명 중 4명이 결제합니다." },
+  { or:"통화 완료 횟수가 많을수록 결제율 상승",
+    desc:"해피콜에서 실제로 전화가 연결된 횟수가 많을수록 결제율이 높습니다. 전화를 받는다는 것 자체가 관심이 있다는 표현입니다. 중요한 건 전화를 많이 거는 것이 아니라 연결이 되느냐입니다. 2번 걸어도 안 받으면 문자나 카카오로 방법을 바꾸는 것이 낫고, 연결되는 고객에게 더 집중하는 것이 효율적입니다." },
+  { or:"결제자 평균 394분 / 미결제자 평균 261분",
+    desc:"체험 기간 중 담당 교사와 통화한 시간의 합계입니다. 결제 고객은 평균 394분, 미결제 고객은 261분으로 약 130분 차이가 납니다. 중요한 것은 통화 횟수가 아니라 통화 시간입니다. 1~2분짜리 확인 전화는 효과가 없고, 5분 이상 대화하면서 아이 반응을 공유하고 학부모의 고민을 들어야 결제로 이어집니다." },
+  { or:"17개 지역 모두 결제에 유의미한 영향 없음",
+    desc:"서울이 결제가 많고 지방이 적어 보여도, 실제로는 지역 자체가 결제를 결정하는 요인이 아닙니다. 지역별로 결제율이 다르게 보이는 이유는 그 지역에 어떤 채널로 유입된 고객이 많은지, 어떤 학년 비중이 높은지에 따른 차이입니다. 지역별로 다른 전략을 짤 필요가 없습니다." },
+];
+
+
+const GRADES=[{l:'중2',v:22.8},{l:'5학년',v:20.1},{l:'3학년',v:19.7},{l:'4학년',v:16.9},{l:'2학년',v:16.4},{l:'중1',v:15.7},{l:'중3',v:14.1},{l:'1학년',v:13.4},{l:'6학년',v:10.9},{l:'6세',v:7.6},{l:'7세',v:7.5},{l:'5세',v:6.9},{l:'4세',v:4.8}];
+
+let selDiv=0, selSub=0;
+
+// ── PAGE SWITCH ─────────────────────────────────
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── OVERVIEW ────────────────────────────────────
+function renderOverviewBars(){
+  const el=document.getElementById('overviewBars');
+  const sorted=[...DIVS].sort((a,b)=>b.rate-a.rate);
+  el.innerHTML='';
+  sorted.forEach(d=>{
+    const pct=(d.rate/55*100).toFixed(0);
+    const row=document.createElement('div');
+    row.className='hbar';
+    row.innerHTML=`<div class="hbar-lbl">${d.name}</div>
+      <div class="hbar-track" onclick="goChannel('${d.name}')">
+        <div class="hbar-fill" style="width:${pct}%;background:${d.color}">${d.rate>=15?d.rate+'%':''}</div>
+      </div><div class="hbar-val">${d.rate}%</div>`;
+    row.style.cursor='pointer';
+    row.addEventListener('click', ()=>{
+      document.querySelectorAll('.factor-row').forEach(r=>r.style.background='');
+      row.style.background='var(--s2)';
+      const box = document.getElementById('factorDesc');
+      box.innerHTML = `
+        <div style="background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${f.insig?'#3a3a52':f.c};flex-shrink:0"></div>
+            <span style="font-size:12px;font-weight:500;color:var(--t1)">${f.name}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;color:${f.insig?'var(--t3)':'var(--teal)'};margin-left:auto">${f.or}</span>
+          </div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.7">${f.desc}</div>
+        </div>`;
+    });
+    el.appendChild(row);
+  });
+  // 첫 번째 항목 기본 선택
+  if(FACTORS.length > 0){
+    document.querySelectorAll('.factor-row')[0]?.click();
+  }
+}
+
+function goChannel(name){
+  selDiv=DIVS.findIndex(d=>d.name===name);
+  selSub=0;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-channel').classList.add('active');
+  document.querySelectorAll('.nav-tab')[1].classList.add('active');
+  renderDivGrid();
+  renderChannelDetail();
+}
+
+function showFactorDesc(idx){
+  const f = FACTORS[idx];
+  const d = FACTOR_DETAIL[idx];
+  document.querySelectorAll('.factor-row').forEach(function(r,i){
+    r.style.background = i===idx ? 'var(--s2)' : '';
+  });
+  const box = document.getElementById('factorDesc');
+  if(!box || !d) return;
+  const dotColor = f.insig ? '#3a3a52' : f.c;
+  const orColor  = f.insig ? 'var(--t3)' : 'var(--teal)';
+  box.innerHTML =
+    '<div style="background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:12px 14px;">' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+        '<div style="width:8px;height:8px;border-radius:50%;background:' + dotColor + ';flex-shrink:0"></div>' +
+        '<span style="font-size:12px;font-weight:500;color:var(--t1)">' + f.name + '</span>' +
+        '<span style="font-size:11px;color:' + orColor + ';margin-left:auto;font-family:monospace">' + d.or + '</span>' +
+      '</div>' +
+      '<div style="font-size:12px;color:var(--t2);line-height:1.7">' + d.desc + '</div>' +
+    '</div>';
+}
+
+
+function renderFactors(){
+  const el=document.getElementById('factorList');
+  el.innerHTML='';
+  FACTORS.forEach((f,i)=>{
+    const pct=f.insig?0:(f.b/3.63*100).toFixed(0);
+    const row=document.createElement('div');
+    row.className='factor-row';
+    row.style.cursor='pointer';
+    row.innerHTML=`<div class="f-num" style="background:${f.insig?'#2a2a3a':f.c}">${i+1}</div>
+      <div class="f-name" style="color:${f.insig?'var(--t3)':'var(--t1)'}">${f.name}${f.neg?` <span style="background:rgba(240,112,96,.15);color:var(--coral);font-size:10px;padding:1px 5px;border-radius:3px;margin-left:4px">${f.negLabel}</span>`:''}${f.insig?' <span style="color:var(--t3);font-size:10px">(비유의)</span>':''}</div>
+      <div class="f-bar"><div class="f-fill" style="width:${pct}%;background:${f.insig?'#2a2a3a':f.c}"></div></div>
+      <div class="f-b">${f.insig?'—':f.b.toFixed(2)}</div>`;
+    row.addEventListener('click', ()=>{ showFactorDesc(i); });
+    el.appendChild(row);
+  });
+  showFactorDesc(0);
+}
+
+
+function renderCompare(){
+  const items=[{l:'출석률',p:86.6,u:57.5,unit:'%',c:'var(--teal)'},{l:'수행률',p:67.9,u:29.0,unit:'%',c:'var(--purple2)'},{l:'학습시간',p:394,u:261,unit:'분',c:'var(--blue)'},{l:'체험일수',p:5.5,u:6.7,unit:'일',c:'var(--amber)'}];
+  const el=document.getElementById('compareChart');
+  el.innerHTML=`<div style="display:flex;gap:14px;margin-bottom:10px;font-size:11px;"><span style="display:flex;align-items:center;gap:5px;color:var(--t2)"><span style="width:10px;height:4px;border-radius:2px;background:var(--purple2);display:inline-block"></span>결제자</span><span style="display:flex;align-items:center;gap:5px;color:var(--t2)"><span style="width:10px;height:4px;border-radius:2px;background:var(--s3);border:1px solid var(--b3);display:inline-block"></span>미결제자</span></div>`;
+  items.forEach(item=>{
+    const mx=Math.max(item.p,item.u)*1.1;
+    const div=document.createElement('div');
+    div.className='cmp-row';
+    div.innerHTML=`<div class="cmp-label">${item.l}</div><div class="cmp-bars"><div class="cmp-bar" style="width:${(item.p/mx*100).toFixed(0)}%;background:${item.c}"></div><div class="cmp-bar" style="width:${(item.u/mx*100).toFixed(0)}%;background:var(--s3);border:1px solid var(--b3)"></div><div class="cmp-vals"><span>${item.p}${item.unit}</span><span>${item.u}${item.unit}</span></div></div>`;
+    el.appendChild(div);
+  });
+}
+
+function renderGrades(){
+  const el=document.getElementById('gradeBars');
+  el.innerHTML='';
+  GRADES.forEach(g=>{
+    const c=g.v>=18?'var(--teal)':g.v>=13?'var(--purple2)':'var(--t3)';
+    const row=document.createElement('div');
+    row.className='hbar';
+    row.style.marginBottom='5px';
+    row.innerHTML=`<div class="hbar-lbl" style="min-width:52px">${g.l}</div><div class="hbar-track" style="height:14px"><div class="hbar-fill" style="width:${(g.v/25*100).toFixed(0)}%;background:${c};height:14px;font-size:9px">${g.v>=14?g.v+'%':''}</div></div><div class="hbar-val">${g.v}%</div>`;
+    row.style.cursor='pointer';
+    row.addEventListener('click', ()=>{
+      document.querySelectorAll('.factor-row').forEach(r=>r.style.background='');
+      row.style.background='var(--s2)';
+      const box = document.getElementById('factorDesc');
+      box.innerHTML = `
+        <div style="background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${f.insig?'#3a3a52':f.c};flex-shrink:0"></div>
+            <span style="font-size:12px;font-weight:500;color:var(--t1)">${f.name}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;color:${f.insig?'var(--t3)':'var(--teal)'};margin-left:auto">${f.or}</span>
+          </div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.7">${f.desc}</div>
+        </div>`;
+    });
+    el.appendChild(row);
+  });
+  // 첫 번째 항목 기본 선택
+  if(FACTORS.length > 0){
+    document.querySelectorAll('.factor-row')[0]?.click();
+  }
+}
+
+// ── CHANNEL PAGE ─────────────────────────────────
+function renderDivGrid(){
+  const g=document.getElementById('divGrid');
+  g.innerHTML='';
+  DIVS.forEach((d,i)=>{
+    const btn=document.createElement('div');
+    btn.className='div-btn'+(i===selDiv?' active':'');
+    const rc=d.rate>=30?'var(--teal)':d.rate>=15?'var(--amber)':d.rate>=10?'var(--purple2)':'var(--coral)';
+    btn.innerHTML=`<div class="div-btn-name">${d.name}</div><div class="div-btn-rate" style="color:${rc}">${d.rate}%</div><div class="div-btn-n">n=${d.n.toLocaleString()} · 기여 ${d.contrib}%</div>`;
+    btn.onclick=()=>{selDiv=i;selSub=0;renderDivGrid();renderChannelDetail();};
+    g.appendChild(btn);
+  });
+}
+
+function renderChannelDetail(){
+  const d=DIVS[selDiv];
+  const rc=d.rate>=30?'var(--teal)':d.rate>=15?'var(--amber)':d.rate>=10?'var(--purple2)':'var(--coral)';
+  const subLabel=d.subType==='place'?'장소유형별':d.subType==='channel'?'세부 채널별':'';
+
+  let html=`
+    <div class="sub-section">
+      <div class="sub-header">
+        <div class="sub-dot" style="background:${d.color}"></div>
+        <div class="sub-title">${d.name}</div>
+        <div class="sub-stats">
+          <div class="sub-stat"><div class="sub-stat-val" style="color:${rc}">${d.rate}%</div><div class="sub-stat-lbl">결제율</div></div>
+          <div class="sub-stat"><div class="sub-stat-val" style="color:var(--teal)">${d.attend}%</div><div class="sub-stat-lbl">출석률</div></div>
+          <div class="sub-stat"><div class="sub-stat-val" style="color:var(--purple2)">${d.perform}%</div><div class="sub-stat-lbl">수행률</div></div>
+          <div class="sub-stat"><div class="sub-stat-val" style="color:var(--t1)">${Math.round(d.n*d.rate/100)}</div><div class="sub-stat-lbl">결제자</div></div>
+          <div class="sub-stat"><div class="sub-stat-val" style="color:var(--t2)">${d.n.toLocaleString()}</div><div class="sub-stat-lbl">전체</div></div>
+        </div>
+      </div>
+      <div class="top-insight">
+        <div class="top-insight-title">이 채널 전체 인사이트</div>
+        <div class="top-insight-text">${d.overallInsight}</div>
+      </div>`;
+
+  if(d.subType!=='none'){
+    html+=`<div class="sec-lbl" style="margin-top:14px;">2단계 — ${subLabel} 세부 인사이트</div>
+      <div class="sub-list">`;
+    d.subs.forEach((s,i)=>{
+      const sr=s.rate>=20?'var(--teal)':s.rate>=12?'var(--amber)':s.rate>=7?'var(--purple2)':'var(--coral)';
+      html+=`<div class="sub-card${i===selSub?' active':''}" onclick="selectSub(${i})">
+        <div class="sub-card-name">${s.name}</div>
+        <div class="sub-card-rate" style="color:${sr}">${s.rate}%</div>
+        <div class="sub-card-meta">결제 ${Math.round(s.n*s.rate/100)}명 / 전체 ${s.n} · 출석 ${s.attend}%</div>
+      </div>`;
+    });
+    html+=`</div>`;
+    html+=`<div id="detailPanel"></div>`;
+  } else {
+    // 세부 채널 없는 경우 바로 단일 인사이트 표시
+    const s=d.subs[0];
+    html+=renderDetailHTML(s);
+  }
+
+  html+=`</div>`;
+  document.getElementById('channelDetail').innerHTML=html;
+
+  if(d.subType!=='none') renderDetailPanel();
+}
+
+function selectSub(i){
+  selSub=i;
+  // 카드 active 갱신
+  document.querySelectorAll('.sub-card').forEach((c,idx)=>c.classList.toggle('active',idx===i));
+  renderDetailPanel();
+}
+
+function renderDetailPanel(){
+  const s=DIVS[selDiv].subs[selSub];
+  document.getElementById('detailPanel').innerHTML=renderDetailHTML(s);
+}
+
+const COUNSEL_INSIGHTS = {"소개": {"needs": "지인·관리교사가 직접 추천한 고객으로 신뢰가 이미 형성된 상태입니다. 상담 텍스트에서 소개자 이름이 직접 언급되거나, 교사가 선제적으로 소개 경로를 확인하고 접근하는 흐름이 반복됩니다. 학습 니즈보다 가격 구조와 혜택 확인이 주된 관심사이며, 형제 할인과 기기 보유 할인을 적극 활용하려는 패턴이 두드러집니다.", "diff": "결제자 상담에서는 담임 교사가 소개자 이름을 먼저 언급하며 신뢰 브릿지를 만들고, 체험 중 아이와 직접 화상·전화 상담을 진행하며 학습 계획을 구체화한 후 결제가 이루어집니다. 직결제를 먼저 안내하는 경우가 많고 당일 ARS 결제로 빠르게 마무리됩니다. 미결제자는 소개를 받았지만 학원비 부담이나 남편 반대로 결정이 미뤄지거나, 체험 기간 중 아이가 학원 일정으로 참여를 못 하는 경우가 많습니다.", "risk": "미결제자 상담에서 가장 많이 반복되는 패턴은 소개를 받았어도 가격이 부담된다며 학원과 비교하거나, 남편과 상의가 안 됐다는 표현입니다. 소개 경로임에도 재체험인 경우 사은품 혜택이 없다는 점에 실망해 이탈하거나, 아이가 학원·태권도 등 과외 활동으로 바빠서 체험에 참여 자체를 못 하는 케이스도 있습니다.", "convert": "결제자 상담에서는 교사가 소개자와의 관계를 먼저 언급하며 인사를 시작하고, 체험 2~3일차에 아이와 직접 통화하거나 화상 상담을 진행한 뒤 그날 혜택 마감을 함께 안내하는 흐름이 반복됩니다. 기기 보유 20% 할인과 형제 동시 등록 구조를 한 번에 설명했을 때 당일 또는 다음날 결제로 이어지는 패턴이 가장 많습니다."}, "브랜드 검색": {"needs": "홈런을 이미 알고 검색해 들어온 고객입니다. 이전에 홈런을 사용했던 만료 회원이나 가족 중 이미 사용 중인 케이스가 많아, 기기 보유 할인 대상자 여부를 먼저 확인하는 패턴이 반복됩니다. 중등 신규 유입 고객의 경우 국어·사회·과학·역사 등 암기과목 보완이 주된 니즈이고, 초등 고학년은 교과서 출판사 연계와 예습·복습 여부를 먼저 확인합니다.", "diff": "결제자 상담에서는 기기 보유 할인(20%)을 확인하고 납득한 후 빠르게 결제 단계로 넘어갑니다. 교과서 출판사를 직접 확인하고 학습 계획을 설정해 준 뒤 당일 또는 이틀 내 결제가 이루어지는 흐름이 반복됩니다. 미결제자는 타사와 동시 체험 중이거나, 아이가 공부 자체를 안 하려 해서 체험 참여가 안 되는 경우가 많습니다.", "risk": "미결제자 상담에서 아이가 엠베스트·엘리하이 등 타사를 선호하거나, 체험 신청만 하고 로그인 기록이 없는 경우가 반복됩니다. 아이가 학원에서 돌아와 피곤해 학습 참여가 어렵거나, 체험 기간이 설 연휴·여행 일정과 겹쳐 실제 체험을 못 하고 종료되는 패턴도 많습니다. 과거에 홈런을 했다가 싫어해서 그만둔 경험이 있는 경우도 재결제로 이어지기 어렵습니다.", "convert": "결제자 상담에서는 중등 고객의 경우 교과서 출판사를 학교 홈페이지까지 확인해서 직접 설정해 준 후, 이러닝 강좌나 내신집중 코스를 체험하게 하고 학부모에게 결과를 공유하는 흐름이 결제로 이어집니다. 초등의 경우 기기 보유 할인을 확인시켜 준 뒤 당일 혜택 마감을 안내하는 타이밍이 효과적입니다."}, "홈페이지": {"needs": "홈페이지를 통해 직접 무료체험을 신청한 고객으로 학습 정보를 충분히 검토한 상태입니다. 중등 신규 유입이 많고 수학 보완, 영어 파닉스·문법, 사회·과학 등 과목별 니즈가 구체적입니다. 지인으로부터 홈런을 들었거나 학교에서 아이스크림 교과서를 사용 중이라는 배경으로 신청한 경우가 많아, 교과서 연계를 직접 확인하려는 패턴이 두드러집니다.", "diff": "결제자 상담에서는 교사가 교과서 출판사를 학교 홈페이지에서 직접 확인해 학습 계획을 먼저 설정해 준 뒤, 아이와 직접 통화해 콘텐츠를 안내하고 학습 완료 칭찬을 공유하는 흐름이 반복됩니다. 7일 이내 전액 환불 가능을 명확히 안내한 뒤 결제를 제안할 때 전환률이 높습니다. 미결제자는 아이와 통화가 안 되거나, 엘리하이와 동시 비교 중이거나, 부가 반대하는 경우가 많습니다.", "risk": "미결제자 상담에서 가장 많이 반복되는 패턴은 공부방으로 보내기로 했다는 결정, 엘리하이와 비교 후 결정, 아이가 안 맞는다고 회수 요청입니다. 국제학교 출신 등 특수한 학습 배경이 있는 경우 과목 수준이 맞지 않아 이탈하는 경우도 있고, 부모가 직접 가르치고 있는 경우 홈런의 필요성을 느끼지 못하는 경우도 반복됩니다.", "convert": "결제자 상담에서는 중등의 경우 교과서 출판사 설정 완료 후 내신 대비 강좌를 직접 체험하게 하고, 체험 종료 전날 기기 보유 할인 혜택을 재안내하는 흐름이 결제로 이어집니다. 7일 이내 전액 환불 보장을 강조하며 부담을 낮추는 접근이 이 채널에서 특히 효과적입니다."}, "키워드 검색": {"needs": "초등·중학 관련 키워드로 검색해 유입된 고객으로 현재 다른 서비스와 비교 탐색 중인 경우가 많습니다. 엘리하이·밀크티·웅진·온리원 등과 동시 체험 신청을 했거나, 기존 서비스 약정이 끝나가는 시점에 교체를 검토하는 패턴이 반복됩니다. 사회·과학 보완을 위해 신청하면서 영수는 학원에서 따로 하고 있다는 경우가 많습니다.", "diff": "결제자 상담에서는 기존 서비스(밀크티·엘리하이)와 비교하다가 홈런이 더 쉽고 학교 교과서와 연계가 잘 된다는 납득이 이루어진 후 결제가 이루어집니다. 형제 할인을 활용하거나, 기존 서비스 종료 시점에 맞춰 교체하는 타이밍을 교사가 먼저 제안하는 경우도 있습니다. 미결제자는 타사와 동시 비교 중이라 결정을 미루거나, 아이가 홈런보다 다른 서비스를 선호하는 경우가 많습니다.", "risk": "미결제자 상담에서 밀크티·엠베스트·온리원과 동시 체험 중이라 결정이 미뤄지는 패턴이 가장 많습니다. 아이가 체험 후 맞지 않는다고 회수를 요청하거나, 바빠서 학습 시간이 안 난다는 표현이 반복됩니다. 아버지가 패드 학습에 부정적인 경우도 이탈로 이어집니다.", "convert": "결제자 상담에서는 밀크티 등 기존 서비스와 직접 비교하며 홈런이 교과서 기반이라는 차별점을 설명하고, 기존 서비스 약정 종료 시점을 확인해 그 시점에 맞춰 결제를 제안하는 흐름이 효과적입니다. 체험 중 아이가 재미있어 한 콘텐츠를 부모와 연결하고, 혜택 마감 안내를 함께 넣는 것이 전환 타이밍입니다."}, "교육 서비스": {"needs": "하이클래스·키즈노트 등 학부모 앱 광고를 통해 유입된 고객입니다. 학습 방향이 모호한 경우가 많고, 아이 아빠가 키자니아 혜택 때문에 신청했다거나 광고를 보고 신청했다는 표현이 반복됩니다. 의도적 탐색보다 광고 노출로 유입된 비율이 높아 첫 상담에서 학습 니즈를 직접 파악하는 것이 중요합니다.", "diff": "결제자 상담에서는 아이가 체험 중 적극적으로 참여하고 학부모가 긍정적 반응을 보인 경우, 형제 할인을 함께 안내하면서 당월 혜택 마감을 강조하는 흐름이 결제로 이어집니다. 초등 결제자는 담임 교사가 학습 피드백을 문자로 먼저 공유하며 관계를 형성한 후 결제 제안을 하는 패턴이 많습니다. 미결제자는 과거 웅진·밀크티 등에서 돈만 낭비했다는 부정적 경험이 있거나, 체험만 하겠다는 의사를 처음부터 밝히는 경우가 많습니다.", "risk": "미결제자 상담에서 체험만 할 계획이라고 처음부터 밝히거나, 과거 타사에서 중도 해지 경험이 있어 약정 자체를 꺼리는 패턴이 반복됩니다. 중2 아이가 사춘기여서 학습 자체를 거부하거나, 엘리하이·구몬과 동시 체험 후 비교해보겠다는 유보 표현도 많습니다.", "convert": "결제자 상담에서는 아이가 체험 중 학습 완료를 하고 학부모가 그 내용을 교사로부터 문자로 받은 직후 결제 의향이 높아지는 패턴이 반복됩니다. 형제 두 명을 함께 등록하는 경우 할인 구조를 한 번에 설명하고 당월 혜택 마감을 안내하는 것이 전환 포인트입니다."}, "지사사업본부": {"needs": "서점·마트·박람회 등 오프라인 현장에서 체험하고 신청한 고객입니다. 현장 상담에서 이미 어느 정도 설명을 들었기 때문에 초기 해피콜 내용이 주소 확인이나 일정 조율 수준에 그치는 경우가 많습니다. 윙크·온리원·엘리하이 등과 동시 비교 체험이 진행 중인 경우가 많고, 형제 두 명 동시 등록 여부와 기기 할인 구조가 가장 많이 확인되는 질문입니다.", "diff": "결제자 상담에서는 현장 방문 이후 교사가 빠르게 학습 계획을 설정하고 당일·다음날 로그인을 유도한 후, 체험 2~3일차에 아이와 통화해 피드백을 주는 흐름이 반복됩니다. 사용기기 특가와 형제 할인을 함께 안내하고 혜택 마감 날짜를 명시하는 것이 전환을 만듭니다. 미결제자는 현장에서 체험 신청을 했지만 집에 돌아간 후 타사와 비교를 계속하거나, 아버지가 반대하거나, 아이가 바빠서 실제 학습 참여가 안 되는 경우가 많습니다.", "risk": "미결제자 상담에서 엘리하이·온리원을 동시에 방문 상담받고 있다는 표현, 아버지 반대, 기기 회수 요청 패턴이 반복됩니다. 현장 방문 이후 1~2일 안에 첫 연락이 없으면 관심이 빠르게 식는 경향이 있습니다. 깐깐한 학부모의 경우 장시간 상담 후 체험만 하고 이탈하는 패턴도 있습니다.", "convert": "결제자 상담에서는 현장 방문 다음날 기기 도착 직후 로그인 유도 문자를 보내고, 이틀 내로 아이와 짧게 통화해 학습 계획을 설정해 준 후, 사용기기 특가와 당월 혜택 마감을 함께 안내하는 흐름이 결제로 이어집니다. 선제적으로 학습 계획을 설정해 두고 학부모에게 알려주는 방식이 특히 효과적입니다."}, "B2B 제휴": {"needs": "슈퍼브이·키자니아·종근당건강 등 제휴사 혜택으로 유입된 고객입니다. 슈퍼브이 경로 고객은 1학년 과정이 끝나 상위 과정이 필요해 홈런으로 자연스럽게 이어지는 경우가 많고, 사은품(키자니아) 목적 신청자는 학습 참여 의향이 낮습니다. 웅진·눈높이·구몬 등 기존 서비스와 병행 가능 여부를 먼저 확인하는 패턴이 반복됩니다.", "diff": "결제자 상담에서는 슈퍼브이 종료 후 홈런으로 자연스럽게 이어지는 흐름이 가장 많고, 아이가 체험 중 AI 진단평가·기초학력평가 등을 직접 해보고 긍정 반응을 보인 후 결제로 이어집니다. 새기기 24개월 약정과 혜택 마감을 함께 안내한 직후 당일 결제가 이루어지는 케이스가 반복됩니다. 미결제자는 웅진·슈퍼브이 약정이 아직 남아있거나, 패드 학습에 부정적이거나, 사은품만 받으려는 목적이 명확한 경우가 많습니다.", "risk": "미결제자 상담에서 사은품 목적 신청임을 직접 밝히거나, 웅진·슈퍼브이 약정이 아직 여러 달 남아있어 당장 교체가 어렵다는 표현이 가장 많이 반복됩니다. 아이가 학습 자체를 거부하거나, 부모가 가게 운영·야근 등으로 아이 학습을 챙길 여력이 없는 경우도 이탈로 이어집니다.", "convert": "결제자 상담에서는 슈퍼브이 종료 시점을 확인하고 그 직전에 홈런으로 연결하는 것이 가장 효과적인 전환 타이밍입니다. 아이가 기초학력평가나 AI 진단평가를 직접 해보고 학부모에게 결과를 공유한 직후, 당월 새기기 혜택 마감을 함께 안내하는 흐름이 반복됩니다."}, "기타채널": {"needs": "L포인트·CJ ONE·하나카드·KT 등 포인트·카드 혜택 연계로 유입된 고객입니다. 학습 목적보다 혜택 목적 신청이 많고, 사은품 혜택이 기존 체험 이력으로 인해 적용되지 않는다는 안내에 실망해 이탈하는 경우가 많습니다. 실제 결제 의향이 있는 경우에는 영수 학원 대체 또는 국사과 보완 니즈가 구체적으로 등장합니다.", "diff": "결제자 상담에서는 아이가 체험 중 국어어휘·인물한국사·드림라이팅 등 특정 콘텐츠에 흥미를 보이고 학부모에게 그 반응이 전달된 후 결제로 이어집니다. 아이와 직접 통화하거나 함께 콘텐츠를 탐색하며 재미있어 한 것을 확인한 뒤 학습비와 혜택을 안내하는 흐름이 반복됩니다. 미결제자는 처음부터 사은품 혜택 여부만 확인하고 체험 참여 의향이 없는 경우, 또는 고3 형제 교육비가 많이 들어 추가 비용이 부담스러운 경우가 많습니다.", "risk": "미결제자 상담에서 재체험이라 사은품 혜택이 안 된다는 안내 후 회수 요청, 학원 숙제로 시간이 없어서 제대로 못 했다는 표현, 엘리하이 약정이 아직 여러 달 남았다는 이탈 패턴이 반복됩니다. 평일 학원 일정으로 실제 로그인이 이루어지지 않고 체험이 종료되는 경우도 많습니다.", "convert": "결제자 상담에서는 아이와 직접 통화해 좋아하는 콘텐츠를 파악하고, 그 콘텐츠가 정회원이 되면 계속 쓸 수 있다는 연결 메시지가 효과적입니다. 기기 보유 할인 대상자인 경우 할인 구조를 명확히 안내하고, 사은품 혜택과 함께 이번 달 마감 일정을 구체적으로 안내하는 것이 전환 포인트입니다."}};
+
+const SUB_COUNSEL_INSIGHTS = {"B2B 제휴": {"슈퍼브이": {"needs": "[결제자 n=13로 소규모 — 방향성 참고용] 슈퍼브이 약정 종료 시점이 가까워져 대체 서비스를 탐색 중인 고객이 대부분입니다. '슈퍼브이 1학년까지만 있어서', '슈퍼브이 2월에 끝남', '5월 종료 예정' 같은 표현이 반복됩니다. 슈퍼브이에 만족했던 경험이 있어 홈런에 대한 거부감이 낮고, 교과서 연계 여부와 상위 과정 존재 여부를 가장 먼저 확인합니다.", "diff": "결제자 상담에서는 슈퍼브이에서 홈런으로 자연스럽게 이어지는 '업그레이드' 프레이밍이 사용됩니다. '슈퍼브이 2년 만족했는데 초등 이후는 홈런으로'라는 흐름이 결제로 이어집니다. 반면 미결제자는 슈퍼브이를 아직 진행 중이거나, 영수 학원과 병행 중이라 추가 서비스 필요성을 느끼지 못하는 경우가 많습니다.", "risk": "미결제자 상담에서 '슈퍼브이도 하고 영어도 따로 하고 있어서', '2월에 체험해본다고 미루심', '초1인데 패드 학습이 아직 이르다는 아버지 반대' 표현이 반복됩니다. 슈퍼브이 약정이 아직 남아있는 경우 바로 결제로 이어지지 않는 패턴이 뚜렷합니다.", "convert": "결제자 상담에서는 '슈퍼브이는 저학년 과정만 있어서 다음 단계가 홈런'이라는 자연스러운 연결 메시지가 전환의 핵심입니다. 아이가 체험 중 스스로 콘텐츠를 탐색하고 긍정 반응을 보인 직후 '이번 주말까지 사은품 혜택'을 안내하는 흐름이 효과적입니다."}, "키자니아": {"needs": "__INSUFFICIENT__", "diff": "__INSUFFICIENT__", "risk": "__INSUFFICIENT__", "convert": "__INSUFFICIENT__"}, "종근당건강 (초등)": {"needs": "종근당건강 사은품 목적 유입이 많아 학습 니즈가 모호합니다. '밀크티 하다 종료 후 비교', '구몬과 병행 고려', '부가 학원으로 보내자고 한다' 같이 학습 방향 자체가 정해지지 않은 경우가 많습니다. 형제 할인과 사용기기 비용 구조에 대한 질문이 자주 등장합니다.", "diff": "결제자 상담에서는 체험 중 아이가 국어·수학·사회과학 등 복수 과목을 직접 해보고 학부모가 '학습량 조절만 되면 하겠다'는 조건부 긍정 반응을 보인 후 결제가 이어집니다. 미결제자는 '웅진에서 해봤는데 잘 안 해서 위약금 냈다', '남편이 반대', '비상온리원이랑 고민 중' 표현이 반복됩니다.", "risk": "미결제자 상담에서 '과거 타사 서비스 중도 해지 이력 있음', '아버지 반대', '아이가 학습 거부하는 경향 있음', '모가 바빠서 챙기지 못함' 패턴이 두드러집니다. 특히 이전 패드 학습에서 중도 해지 경험이 있는 가정은 결제 전환이 어렵습니다.", "convert": "결제자 상담에서는 형제 동시 등록 시 할인 구조를 구체적으로 안내하고, '웅진북클럽은 영상 위주인데 홈런은 교과 연계'라는 차별점을 명확히 전달한 직후 결제가 이루어집니다. 형제 있는 가정에서 형제 할인을 계기로 한 번에 등록하는 패턴이 효과적입니다."}, "종근당건강 (중등)": {"needs": "__INSUFFICIENT__", "diff": "__INSUFFICIENT__", "risk": "__INSUFFICIENT__", "convert": "__INSUFFICIENT__"}}, "교육 서비스": {"하이클래스 (초등)": {"needs": "학교 알림장 앱 하이클래스를 통해 광고를 보고 유입된 학부모로, 자녀 교육에 관심이 높은 층입니다. '사교육 없어서 전체적으로 봐주길 원함', '윙크 2년 했는데 영어 부족', '국어 수학 외 과학 역사 등 암기과목 보완', '엘리하이와 비교 체험 중' 패턴이 반복됩니다. 경쟁사 비교 체험이 동시에 진행되는 경우가 많습니다.", "diff": "결제자 상담에서는 '모가 홈런을 잘 알아보고 직접 신청했다', '교과서 연계 설명 듣고 납득', '아이가 혼자서 잘 하더라' 등 학부모의 능동적 탐색과 아이의 자발적 참여가 결합된 케이스입니다. 미결제자는 '예지가 설명이 어렵다고 회수 요청', '다른 앱도 체험 중', '아이 감기·병원' 등 현실적 방해 요인이 많습니다.", "risk": "미결제자 상담에서 '엘리하이·밀크티 동시 체험 중으로 비교 후 결정', '아이가 학원에서 돌아오면 피곤해서 못 함', '광고 문자가 계속 와서 신청하는 것이라 학습 의향 없음' 표현이 자주 나옵니다. 광고 노출로 충동 신청한 경우는 첫 상담 반응으로 의향을 빠르게 판별해야 합니다.", "convert": "결제자 상담에서는 검정교과서 출판사별 연계 학습 설정을 교사가 직접 해주고, 형제 할인·월 할인 혜택을 함께 안내한 직후 결제가 이루어집니다. '학교 선생님들이 아이스크림 미디어 쓴다'는 신뢰 메시지와 구체적 혜택 마감이 복합적으로 작용합니다."}, "키즈노트 (리틀)": {"needs": "__INSUFFICIENT__", "diff": "__INSUFFICIENT__", "risk": "__INSUFFICIENT__", "convert": "__INSUFFICIENT__"}, "키즈노트 (초등)": {"needs": "초등 자녀를 둔 학부모로, 기존에 눈높이·구몬·윙크 등을 경험했거나 비교 탐색 중인 경우가 많습니다. '수학이 어려워지고 있다', '영어 파닉스 완성이 안 됐다', '사회·과학 등 암기과목 지원 원함' 같이 과목별 부족함이 구체적으로 인식된 상태입니다.", "diff": "결제자 상담에서는 형제 할인을 활용해 두 자녀를 함께 등록하거나, '밀크티 지겨워해서 교체'처럼 기존 서비스 불만이 전환 동기가 된 경우가 많습니다. 미결제자는 '기존 학원 숙제로 할 시간 없음', '아이가 국어 재미없다고 함', '아버지가 패드 학습 반대' 패턴이 반복됩니다.", "risk": "미결제자 상담에서 '처음부터 알아서 보고 궁금한 것 있으면 연락하겠다며 상담 거부', '기존 학원 숙제 벅차다', '선택 아니고 필수라는 설명에도 결정 못 함', '아버지와 상의 필요' 표현이 반복됩니다. 상담에 소극적인 학부모는 이탈 가능성이 높습니다.", "convert": "결제자 상담에서는 '밀크티는 3만원 추가 결제 필요한데 홈런 북카페는 무료'처럼 경쟁사 대비 가성비를 구체적 수치로 보여주는 접근이 효과적입니다. 서술형 평가·단원평가·족집게 문제 같은 학교 시험 대비 콘텐츠를 직접 보여준 직후 등록이 이루어진 경우가 많습니다."}}, "지사사업본부": {"서점": {"needs": "교보·영풍문고 등 서점에서 책을 보다 홈런 체험 코너를 들른 고객입니다. 학습에 관심이 있는 층이지만 그 자리에서 즉흥적으로 신청한 경우가 많습니다. '엘리하이·밀크티와 비교 후 결정', '형제 할인 여부 확인', '관리 교사 시스템이 어떻게 되는지' 등 비교 탐색 질문이 많습니다.", "diff": "결제자 상담에서는 현장 상담 당일 교사가 학습 계획을 먼저 설정하고, 이후 아이가 실제로 접속해 학습 완료를 확인한 케이스가 많습니다. 사용기기 할인 혜택을 구체적으로 안내받은 직후 결제하는 흐름이 반복됩니다. 미결제자는 현장에서 체험을 신청했지만 '엄마표 학습으로 직접 가르치겠다', '학습비 부담', '아버지와 상의 후 결정' 으로 이탈합니다.", "risk": "미결제자 상담에서 '단순 호기심으로 신청, 도입 의사 없음', '학습비 부담', '구몬 병행 중이라 당장 어렵다', '체험 3일 후 기존 서비스 계속하겠다' 표현이 나옵니다. 서점에서 즉흥 신청한 고객 중 실제 학습 니즈가 없는 경우가 적지 않습니다.", "convert": "결제자 상담에서는 현장 방문 직후 기기 배송 완료 알림과 함께 '오늘부터 학교 공부 특별학습 설정했다'는 선제적 온보딩 문자가 다음 날 결제로 이어지는 흐름이 반복됩니다. 사용기기 40% 할인과 혜택 마감을 함께 안내하는 것이 결정적 전환 포인트입니다."}, "박람회": {"needs": "[결제자 n=13로 소규모 — 방향성 참고용] 키즈·교육 박람회에서 여러 부스를 돌아본 후 체험 신청한 고객입니다. 적극적으로 교육 정보를 수집하는 층이지만 여러 업체를 동시에 비교 중인 경우가 많습니다. '엘리하이·윙크 형제들이 하고 있어 비교', '화상 관리 방식에 관심', '윙크 위약금 후 교체 시점 탐색' 패턴이 나타납니다.", "diff": "결제자 상담에서는 '현재 사용 중인 윙크 약정 종료 후 교체 확정'처럼 교체 시점이 명확한 경우 결제로 이어집니다. 화상 관리에 관심이 높아 담임 교사 관리 방식을 구체적으로 확인한 후 등록하는 흐름이 보입니다. 미결제자는 '다른 타사도 체험 예정', '태블릿 부정적이라 체험 노출 미루고 싶다', '다음주 받겠다고 미루다 이탈'이 반복됩니다.", "risk": "미결제자 상담에서 '타사 체험 후 결정', '웅진 방문 학습 시작해 비교 지속', '태블릿 학습 부정적', '로그인 오류·기기 문제로 체험 시작 못 함' 패턴이 반복됩니다. 박람회 현장에서 여러 업체를 돌며 비교 중인 고객은 결제까지 시간이 오래 걸립니다.", "convert": "결제자 상담에서는 '윙크 약정 종료 후 바로 홈런으로 교체'라는 명확한 전환 타이밍에서 결제가 이루어집니다. 화상 관리 시스템과 지면교재 발송을 경쟁사와 구체적으로 비교한 직후가 전환 포인트입니다."}, "마트": {"needs": "대형마트 내 홈런 체험 코너에서 쇼핑 중 노출된 고객입니다. '아이가 기기에 관심을 보여서 신청', '웅진 약정 종료 후 교체 검토', '형제 두 명 함께 시작 고려' 패턴이 나타납니다. 쇼핑 중 즉흥적으로 신청한 경우가 많아 집에 돌아간 후 참여 의향이 낮아지는 경향이 있습니다.", "diff": "결제자 상담에서는 교사가 학습기 설정을 선제적으로 해주고 '오늘 학습 완료 알림 받으셨죠?' 같은 구체적 후속 관리가 이루어진 케이스입니다. '형제 할인 + 사은품 혜택 마감 오늘까지'라는 복합 제안에 당일 결제가 이루어진 흐름도 확인됩니다. 미결제자는 '4세 동생과 기기 싸움', '아이가 체험 포장만 해둔 상태', '3일차 이후 결정 못 함' 패턴입니다.", "risk": "미결제자 상담에서 '홈런북이 뭔지도 모르고 신청서 썼다', '아이 학습 시킬 생각 없다', '4세 동생과 싸워서 학습 어려움', '주말에 계속 외부 활동으로 학습 못 함' 표현이 반복됩니다. 마트 현장에서 즉흥 신청한 비율이 높아 실제 학습 참여율이 가장 낮은 채널입니다.", "convert": "결제자 상담에서는 기기 배송 후 당일 로그인을 유도하고, '지유·현우 형제 할인 40% + 담임 교사 코칭 시스템' 전체를 한 번에 설명한 직후 화요일 재통화 후 결제가 이루어진 흐름이 보입니다. 당일 로그인 유도와 이틀 내 후속 전화가 마트 유입 고객 전환의 핵심입니다."}, "복합문화공간": {"needs": "키즈카페·테마파크·아쿠아리움 등 놀이 환경에서 노출된 고객입니다. '밀크티 2년 했었는데 지루해함', '웅진 약정 종료 후 교체 탐색', '아이가 기기에 관심을 보임' 같이 놀이 목적 방문 중 우연히 알게 된 경우가 대부분입니다. 학습 목적보다 아이의 콘텐츠 흥미에 초점이 맞춰져 있습니다.", "diff": "결제자 상담에서는 아이가 학습기를 스스로 탐색하면서 '3D 체험관', 'XR 스쿨' 같은 시각적 콘텐츠에 흥미를 보인 경우 학부모가 관심을 갖게 됩니다. 담임 교사가 '홈런톡으로 피드백 시간이 얼마나 걸리는지'같은 관리 방식 질문에 구체적으로 답한 후 결제가 이루어집니다. 미결제자는 '다른 것도 체험해보고 결정', '온리원 10개월 남아 비교 중' 패턴이 반복됩니다.", "risk": "미결제자 상담에서 '콘텐츠 좋고 아이도 좋아하나 다른 것도 해보고 싶다', '기존 약정이 남아있다', '아이 외부 활동 많아 학습 시간 없다', '어린이집 귀가가 늦어 체험 기간 내 학습 못 함' 표현이 반복됩니다. 놀이 환경 노출 특성상 '재미있어 보인다'에서 '결제'로의 전환 장벽이 높습니다.", "convert": "결제자 상담에서는 '3D XR 체험관 같은 콘텐츠는 정회원이 돼야 계속 쓸 수 있다'는 메시지가 전환의 계기가 됩니다. 아이가 직접 즐긴 콘텐츠를 '정회원 전용'으로 연결하는 프레이밍과, 형제 할인 구조를 한 번에 설명하는 흐름이 효과적입니다."}, "학교": {"needs": "학교 행사·엑스포에서 노출된 고객입니다. '학교에서 이미 아이스크림 교과서 사용', '웅진 약정 종료 후 교체', '수학 선행학습 중인데 복습 보완이 필요' 같이 학교 연계 필요성을 이미 인지하고 있는 경우가 많습니다. 형제 동시 신청 비율이 높습니다.", "diff": "결제자 상담에서는 '학교에서 아이스크림 미디어 교과서 쓴다'는 연계 신뢰도가 결제의 핵심 근거로 작용합니다. '웅진 위약금 없음 확인 후 첫째 먼저 시작', '수학 선행은 학원에서 하고 복습·암기과목은 홈런'이라는 병행 구조가 학부모에게 납득됩니다. 미결제자는 '공부방과 홈런 비교 중', '아버지와 상의 후 결정', '웅진 6개월 남아 바로 교체 어려움' 표현이 반복됩니다.", "risk": "미결제자 상담에서 '윙크 때문에 당장 못 함', '공부방 상담도 받아보겠다', '아이가 학원 다녀오면 엉덩이 힘이 없다', '라벨 로그인 오류로 체험 시작 지연' 패턴이 반복됩니다. 타 서비스와 동시 검토 중인 고객은 결정까지 시간이 걸립니다.", "convert": "결제자 상담에서는 '학교 선생님들이 쓰는 아이스크림 미디어가 홈런의 배경 회사'라는 신뢰 메시지와 '기초학력 진단평가를 홈런에서 미리 볼 수 있다'는 실용 메시지가 결합된 직후 결제가 이루어집니다. 학교 수업 연계를 교과서 출판사·평가 시스템까지 연결해서 설명하는 것이 핵심입니다."}, "유치원": {"needs": "유치원 연계 행사에서 체험 신청한 미취학~초등 저학년 학부모입니다. '한글 기초 시작 단계', '영어는 아직 알파벳 수준', '학습 시작 시점에 대한 고민', '신기한 한글나라 대비 더 다양한 콘텐츠 원함' 패턴이 나타납니다. 학습 습관 형성과 자녀의 흥미 유발이 주된 관심사입니다.", "diff": "결제자 상담에서는 '초등 3학년이 되면 과목이 어려워지니 미리 습관을 잡아야 한다'는 전환점 메시지와 '지면 교재가 매달 발송된다'는 구체적 혜택이 결합된 경우 결제로 이어집니다. 아이가 공룡·곤충 같은 콘텐츠에 흥미를 보인 직후 '리틀 특가 혜택 마감'을 안내한 흐름이 반복됩니다. 미결제자는 '아이들이 패드를 게임처럼 쓸까봐 부정적', '기존 타사 체험 2~3일 후 싫증 낸 경험'이 반복됩니다.", "risk": "미결제자 상담에서 '이전 서비스에서 2~3일 후 싫증 낸 경험 있음', '아직 패드 학습 시키고 싶지 않다', '아이가 호불호 강하고 고집이 심함', '영상만 보려 한다' 표현이 자주 나옵니다. 미취학 아동의 변덕스러운 반응을 부모가 가장 크게 우려합니다.", "convert": "결제자 상담에서는 '신기한 한글나라보다 학습이 다양하고 초등 연계까지 된다'는 경쟁 대비 차별점과 '공룡·자연동화 같은 아이 관심 콘텐츠를 직접 체험'시킨 직후 3일 혜택 마감을 안내하는 흐름이 효과적입니다. 아이의 반응을 학부모가 직접 확인하게 만드는 체험 유도가 핵심입니다."}}};
+
+function renderDetailHTML(s){
+  const divName = DIVS[selDiv].name;
+  const subName = DIVS[selDiv].subs[selSub].name;
+  // 2depth 인사이트 우선 조회, 없으면 1depth fallback
+  let ci = null;
+  if (SUB_COUNSEL_INSIGHTS[divName] && SUB_COUNSEL_INSIGHTS[divName][subName]) {
+    ci = SUB_COUNSEL_INSIGHTS[divName][subName];
+  } else {
+    ci = COUNSEL_INSIGHTS[divName] || null;
+  }
+  const warnHtml=s.warn?`<div class="warn-box"><strong style="color:var(--coral)">주의 ·</strong> ${s.warn}</div>`:'';
+  // 모수 부족 체크
+  const isInsufficient = ci && ci.needs === "__INSUFFICIENT__";
+  const counselHtml = ci ? isInsufficient ? `
+    <div style="margin-top:14px;border-top:1px solid var(--b1);padding-top:14px;">
+      <div style="font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">상담 텍스트 분석</div>
+      <div style="background:var(--coral-bg);border:1px solid rgba(240,112,96,.2);border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:#f09090;line-height:1.65;">
+        결제자 표본이 10건 미만으로 통계적으로 의미 있는 분석이 어렵습니다. 상담 인사이트는 상위 구분(${divName}) 전체 기준을 참고하세요.
+      </div>
+    </div>` :  `
+    <div style="margin-top:14px;border-top:1px solid var(--b1);padding-top:14px;">
+      <div style="font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">상담 텍스트 분석 — 결제자 vs 미결제자</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:14px 16px;border-left:2px solid var(--blue)">
+          <div style="font-size:11px;font-weight:600;color:var(--blue);margin-bottom:8px">주요 학습 니즈</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.75">${ci.needs}</div>
+        </div>
+        <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:14px 16px;border-left:2px solid var(--teal)">
+          <div style="font-size:11px;font-weight:600;color:var(--teal);margin-bottom:8px">결제자 vs 미결제자 차이</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.75">${ci.diff}</div>
+        </div>
+        <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:14px 16px;border-left:2px solid var(--coral)">
+          <div style="font-size:11px;font-weight:600;color:var(--coral);margin-bottom:8px">이탈 위험 신호</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.75">${ci.risk}</div>
+        </div>
+        <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:14px 16px;border-left:2px solid var(--amber)">
+          <div style="font-size:11px;font-weight:600;color:var(--amber);margin-bottom:8px">전환 결정적 순간</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.75">${ci.convert}</div>
+        </div>
+      </div>
+    </div>` : '';
+  return `<div class="detail-panel">
+    <div class="detail-grid">
+      <div class="ins-card" style="border-left-color:#5b9cf6">
+        <div class="ins-section-title" style="color:#5b9cf6">이 고객은 누구인가</div>
+        <div class="ins-text">${s.who}</div>
+        ${warnHtml}
+      </div>
+      <div class="ins-card" style="border-left-color:#2dd4a0">
+        <div class="ins-section-title" style="color:#2dd4a0">어떻게 접근할 것인가</div>
+        <div class="ins-text">${s.how}</div>
+        <div class="script-box">
+          <div class="script-tag">// 첫 마디 스크립트</div>
+          <div class="script-text">${s.script}</div>
+        </div>
+      </div>
+    </div>
+    ${counselHtml}
+  </div>`;
+}
+
+// ── ACTION PAGE ──────────────────────────────────
+function renderSignals(){
+  const goods=['체험 2일 내 연속 로그인','수행률 50% 이상','학부모가 먼저 문의','출석률 70% 이상'];
+  const bads=['체험 2일차 로그인 0회','수행률 30% 이하','해피콜 2회 이상 무응답','과목 5개 이상 설정'];
+  document.getElementById('signalGrid').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="background:var(--teal-bg);border:1px solid rgba(45,212,160,.2);border-radius:var(--radius-sm);padding:12px 14px;">
+        <div style="font-size:11px;font-weight:500;color:var(--teal);margin-bottom:8px">결제 가능성 높음</div>
+        ${goods.map(t=>`<div style="display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--t2);line-height:1.8;"><span style="width:5px;height:5px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0;display:block"></span>${t}</div>`).join('')}
+      </div>
+      <div style="background:var(--coral-bg);border:1px solid rgba(240,112,96,.2);border-radius:var(--radius-sm);padding:12px 14px;">
+        <div style="font-size:11px;font-weight:500;color:var(--coral);margin-bottom:8px">이탈 가능성 높음</div>
+        ${bads.map(t=>`<div style="display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--t2);line-height:1.8;"><span style="width:5px;height:5px;border-radius:50%;background:var(--coral);margin-top:6px;flex-shrink:0;display:block"></span>${t}</div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderTimeline(){
+  const steps=[
+    {day:'D+0',title:'체험 시작 당일',color:'var(--purple)',text:'과목 2~3개로 제한 안내. 첫 로그인 확인 문자 발송.'},
+    {day:'D+1',title:'첫 로그인 확인',color:'var(--teal)',text:'미접속 시 즉시 연락. "오늘 한 번 들어가 보셨어요?"'},
+    {day:'D+2',title:'골든타임',color:'var(--teal)',text:'연속 접속 + 수행률 50% 이상이면 결제 대화 준비.'},
+    {day:'D+3',title:'결제 제안 타이밍',color:'var(--amber)',text:'긍정 신호 확인 후 선제적 결제 제안.'},
+    {day:'D+5',title:'마지막 기회',color:'var(--amber)',text:'만료 안내 + 혜택 제시. 수행률 낮으면 재안내.'},
+    {day:'D+7',title:'체험 만료',color:'var(--coral)',text:'미결제 고객 → 체험DB 분류, 재체험 캠페인 대상 관리.'},
+  ];
+  document.getElementById('timeline').innerHTML=steps.map(s=>`
+    <div style="display:flex;gap:10px;margin-bottom:9px;align-items:flex-start;">
+      <div style="min-width:36px;padding:2px 0;background:${s.color}20;border:1px solid ${s.color}40;border-radius:4px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:${s.color}">${s.day}</div>
+      <div><div style="font-size:12px;font-weight:500;color:var(--t1);margin-bottom:1px">${s.title}</div><div style="font-size:11px;color:var(--t2);line-height:1.6">${s.text}</div></div>
+    </div>`).join('');
+}
+
+function renderGuides(){
+  const hc=[{t:'통화완료 = 관심 신호',d:'전화를 받는다는 것 자체가 구매 의향의 표현. 통화완료 횟수 OR=1.33.'},
+    {t:'2회 무응답 → 채널 전환',d:'2회 이상 무응답이면 문자·카카오로 전환. 계속 전화하는 건 역효과.'},
+    {t:'첫 통화 10분 = 황금 신호',d:'첫 통화 10분 이상이면 당일·다음날 결제 제안 타이밍.'}];
+  const cs=[{t:'5분 법칙',d:'결제자 평균 8.6분 vs 미결제자 4.2분. 5분 이상 통화를 목표로.'},
+    {t:'3가지 필수',d:'① 아이 반응 공유 ② 학부모 고민 청취 ③ 다음 액션 제안.'},
+    {t:'수행률 낮은 고객 특별 관리',d:'"오늘 ○○ 과목 한 번 해보시겠어요?" 구체적 행동 유도.'}];
+  const bcolor='var(--purple)';
+  const gcolor='var(--teal)';
+  document.getElementById('happycallGuide').innerHTML=hc.map(i=>`<div style="margin-bottom:9px;padding:9px 11px;background:var(--s2);border-radius:var(--radius-sm);border-left:2px solid ${bcolor}"><div style="font-size:12px;font-weight:500;color:var(--t1);margin-bottom:2px">${i.t}</div><div style="font-size:11px;color:var(--t2);line-height:1.6">${i.d}</div></div>`).join('');
+  document.getElementById('consultGuide').innerHTML=cs.map(i=>`<div style="margin-bottom:9px;padding:9px 11px;background:var(--s2);border-radius:var(--radius-sm);border-left:2px solid ${gcolor}"><div style="font-size:12px;font-weight:500;color:var(--t1);margin-bottom:2px">${i.t}</div><div style="font-size:11px;color:var(--t2);line-height:1.6">${i.d}</div></div>`).join('');
+}
+
+// INIT
+renderOverviewBars();renderFactors();renderCompare();renderGrades();
+renderDivGrid();renderChannelDetail();
+renderSignals();renderTimeline();renderGuides();
+
+// ── LEARNING PAGE ────────────────────────────────
+function renderAttendBars(){
+  const data=[{l:'90~100%',v:44.3,c:'#2dd4a0'},{l:'70~90%',v:15.8,c:'#5b9cf6'},{l:'50~70%',v:10.5,c:'#7c6ef5'},{l:'30~50%',v:4.9,c:'#888780'},{l:'0~30%',v:0.8,c:'#3a3a52'}];
+  const el=document.getElementById('attendBars'); el.innerHTML='';
+  data.forEach(d=>{
+    const row=document.createElement('div'); row.className='hbar';
+    row.innerHTML=`<div class="hbar-lbl" style="min-width:72px">${d.l}</div><div class="hbar-track"><div class="hbar-fill" style="width:${(d.v/50*100).toFixed(0)}%;background:${d.c}">${d.v>=8?d.v+'%':''}</div></div><div class="hbar-val">${d.v}%</div>`;
+    row.style.cursor='pointer';
+    row.addEventListener('click', ()=>{
+      document.querySelectorAll('.factor-row').forEach(r=>r.style.background='');
+      row.style.background='var(--s2)';
+      const box = document.getElementById('factorDesc');
+      box.innerHTML = `
+        <div style="background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${f.insig?'#3a3a52':f.c};flex-shrink:0"></div>
+            <span style="font-size:12px;font-weight:500;color:var(--t1)">${f.name}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;color:${f.insig?'var(--t3)':'var(--teal)'};margin-left:auto">${f.or}</span>
+          </div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.7">${f.desc}</div>
+        </div>`;
+    });
+    el.appendChild(row);
+  });
+  // 첫 번째 항목 기본 선택
+  if(FACTORS.length > 0){
+    document.querySelectorAll('.factor-row')[0]?.click();
+  }
+}
+function renderPerformBars(){
+  const data=[{l:'80~100%',v:46.7,c:'#7c6ef5'},{l:'60~80%',v:20.9,c:'#a99ff7'},{l:'40~60%',v:17.1,c:'#5b9cf6'},{l:'20~40%',v:11.2,c:'#888780'},{l:'0~20%',v:4.4,c:'#3a3a52'}];
+  const el=document.getElementById('performBars'); el.innerHTML='';
+  data.forEach(d=>{
+    const row=document.createElement('div'); row.className='hbar';
+    row.innerHTML=`<div class="hbar-lbl" style="min-width:72px">${d.l}</div><div class="hbar-track"><div class="hbar-fill" style="width:${(d.v/50*100).toFixed(0)}%;background:${d.c}">${d.v>=8?d.v+'%':''}</div></div><div class="hbar-val">${d.v}%</div>`;
+    row.style.cursor='pointer';
+    row.addEventListener('click', ()=>{
+      document.querySelectorAll('.factor-row').forEach(r=>r.style.background='');
+      row.style.background='var(--s2)';
+      const box = document.getElementById('factorDesc');
+      box.innerHTML = `
+        <div style="background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${f.insig?'#3a3a52':f.c};flex-shrink:0"></div>
+            <span style="font-size:12px;font-weight:500;color:var(--t1)">${f.name}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;color:${f.insig?'var(--t3)':'var(--teal)'};margin-left:auto">${f.or}</span>
+          </div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.7">${f.desc}</div>
+        </div>`;
+    });
+    el.appendChild(row);
+  });
+  // 첫 번째 항목 기본 선택
+  if(FACTORS.length > 0){
+    document.querySelectorAll('.factor-row')[0]?.click();
+  }
+}
+function renderTimeBars(){
+  const data=[{l:'8시간+',v:23.8,c:'#f5a623'},{l:'4~8시간',v:22.3,c:'#f5a623'},{l:'2~4시간',v:16.5,c:'#ef9f27'},{l:'1~2시간',v:9.7,c:'#888780'},{l:'1시간 미만',v:3.4,c:'#3a3a52'}];
+  const el=document.getElementById('timeBars'); el.innerHTML='';
+  data.forEach(d=>{
+    const row=document.createElement('div'); row.className='hbar';
+    row.innerHTML=`<div class="hbar-lbl" style="min-width:72px">${d.l}</div><div class="hbar-track"><div class="hbar-fill" style="width:${(d.v/28*100).toFixed(0)}%;background:${d.c}">${d.v>=6?d.v+'%':''}</div></div><div class="hbar-val">${d.v}%</div>`;
+    row.style.cursor='pointer';
+    row.addEventListener('click', ()=>{
+      document.querySelectorAll('.factor-row').forEach(r=>r.style.background='');
+      row.style.background='var(--s2)';
+      const box = document.getElementById('factorDesc');
+      box.innerHTML = `
+        <div style="background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${f.insig?'#3a3a52':f.c};flex-shrink:0"></div>
+            <span style="font-size:12px;font-weight:500;color:var(--t1)">${f.name}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;color:${f.insig?'var(--t3)':'var(--teal)'};margin-left:auto">${f.or}</span>
+          </div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.7">${f.desc}</div>
+        </div>`;
+    });
+    el.appendChild(row);
+  });
+  // 첫 번째 항목 기본 선택
+  if(FACTORS.length > 0){
+    document.querySelectorAll('.factor-row')[0]?.click();
+  }
+}
+function renderSubjectCountBars(){
+  const data=[{l:'1~2과목',v:25.4,c:'#2dd4a0'},{l:'7과목+',v:17.6,c:'#7c6ef5'},{l:'5~6과목',v:15.0,c:'#888780'},{l:'3~4과목',v:14.2,c:'#888780'}];
+  const el=document.getElementById('subjectCountBars'); el.innerHTML='';
+  data.forEach(d=>{
+    const row=document.createElement('div'); row.className='hbar';
+    row.innerHTML=`<div class="hbar-lbl" style="min-width:72px">${d.l}</div><div class="hbar-track"><div class="hbar-fill" style="width:${(d.v/30*100).toFixed(0)}%;background:${d.c}">${d.v+'%'}</div></div><div class="hbar-val">${d.v}%</div>`;
+    row.style.cursor='pointer';
+    row.addEventListener('click', ()=>{
+      document.querySelectorAll('.factor-row').forEach(r=>r.style.background='');
+      row.style.background='var(--s2)';
+      const box = document.getElementById('factorDesc');
+      box.innerHTML = `
+        <div style="background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${f.insig?'#3a3a52':f.c};flex-shrink:0"></div>
+            <span style="font-size:12px;font-weight:500;color:var(--t1)">${f.name}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;color:${f.insig?'var(--t3)':'var(--teal)'};margin-left:auto">${f.or}</span>
+          </div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.7">${f.desc}</div>
+        </div>`;
+    });
+    el.appendChild(row);
+  });
+  // 첫 번째 항목 기본 선택
+  if(FACTORS.length > 0){
+    document.querySelectorAll('.factor-row')[0]?.click();
+  }
+}
+function renderSubjectBars(){
+  const data=[
+    {l:'영어',v:19.6,c:'#5b9cf6'},{l:'사회',v:16.7,c:'#7c6ef5'},{l:'과학',v:16.4,c:'#2dd4a0'},
+    {l:'역사',v:16.2,c:'#2dd4a0'},{l:'한자',v:16.1,c:'#888780'},{l:'수학',v:14.1,c:'#f5a623'},
+    {l:'국어',v:13.3,c:'#f5a623'},{l:'한국사',v:13.6,c:'#888780'},
+    {l:'독서',v:8.8,c:'#3a3a52'},{l:'공통',v:8.1,c:'#3a3a52'},
+  ];
+  const el=document.getElementById('subjectBars'); el.innerHTML='';
+  data.forEach(d=>{
+    const row=document.createElement('div'); row.className='hbar';
+    row.style.marginBottom='5px';
+    row.innerHTML=`<div class="hbar-lbl" style="min-width:52px">${d.l}</div><div class="hbar-track" style="height:14px"><div class="hbar-fill" style="width:${(d.v/22*100).toFixed(0)}%;background:${d.c};height:14px;font-size:9px">${d.v>=12?d.v+'%':''}</div></div><div class="hbar-val">${d.v}%</div>`;
+    row.style.cursor='pointer';
+    row.addEventListener('click', ()=>{
+      document.querySelectorAll('.factor-row').forEach(r=>r.style.background='');
+      row.style.background='var(--s2)';
+      const box = document.getElementById('factorDesc');
+      box.innerHTML = `
+        <div style="background:var(--s2);border:1px solid var(--b2);border-radius:var(--radius-sm);padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${f.insig?'#3a3a52':f.c};flex-shrink:0"></div>
+            <span style="font-size:12px;font-weight:500;color:var(--t1)">${f.name}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:11px;color:${f.insig?'var(--t3)':'var(--teal)'};margin-left:auto">${f.or}</span>
+          </div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.7">${f.desc}</div>
+        </div>`;
+    });
+    el.appendChild(row);
+  });
+  // 첫 번째 항목 기본 선택
+  if(FACTORS.length > 0){
+    document.querySelectorAll('.factor-row')[0]?.click();
+  }
+}
+const COURSE_DATA = {
+  '초등': {
+    items:[
+      {l:'자유',     v:25.0, n:2815,  c:'#2dd4a0', note:'n=2,815'},
+      {l:'학교공부', v:18.4, n:41187, c:'#f5a623', note:'n=41,187'},
+      {l:'특별',     v:14.4, n:201,   c:'#7c6ef5', note:'n=201'},
+      {l:'표준',     v:11.7, n:38768, c:'#888780', note:'n=38,768'},
+    ],
+    insight:'자유 코스(25.0%)가 표준(11.7%) 대비 2배 이상 높습니다. 정해진 커리큘럼보다 아이가 원하는 것을 스스로 선택해 학습할 때 만족도와 전환율이 올라갑니다. 온보딩 시 자유 코스를 먼저 경험하게 유도하는 것이 핵심 액션입니다.',
+    color:'#2dd4a0'
+  },
+  '중등': {
+    items:[
+      {l:'이러닝강좌', v:43.4, n:364,  c:'#7c6ef5', note:'n=364'},
+      {l:'실력평가',   v:30.0, n:856,  c:'#2dd4a0', note:'n=856'},
+      {l:'내신집중',   v:15.7, n:5372, c:'#f5a623', note:'n=5,372'},
+      {l:'학교공부',   v:0.0,  n:27,   c:'#3a3a52', note:'n=27 (소표본)'},
+    ],
+    insight:'이러닝강좌(43.4%)와 실력평가(30.0%)가 압도적으로 높습니다. 중등 학부모는 "우리 아이 실력이 어느 수준인지"를 확인하고 싶은 니즈가 강합니다. 체험 초반에 실력 진단을 경험하게 하고, 그 결과를 상담에 활용하는 것이 결제 전환의 핵심입니다.',
+    color:'#7c6ef5'
+  }
+};
+let currentStage='초등';
+function switchStage(stage, btn){
+  currentStage=stage;
+  document.querySelectorAll('#stageTabs .sub-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderCourseBars();
+}
+function renderCourseBars(){
+  const d=COURSE_DATA[currentStage];
+  const el=document.getElementById('courseBars'); el.innerHTML='';
+  const maxV=Math.max(...d.items.map(x=>x.v))*1.1;
+  d.items.forEach(item=>{
+    const row=document.createElement('div'); row.className='hbar';
+    row.style.marginBottom='6px';
+    row.innerHTML=`<div class="hbar-lbl" style="min-width:72px">${item.l}</div>
+      <div class="hbar-track" style="height:17px">
+        <div class="hbar-fill" style="width:${(item.v/maxV*100).toFixed(0)}%;background:${item.c};height:17px">
+          ${item.v>=10?item.v+'%':''}
+        </div>
+      </div>
+      <div class="hbar-val">${item.v}%</div>`;
+    el.appendChild(row);
+  });
+  document.getElementById('courseInsight').innerHTML=
+    `<strong style="color:${d.color}">핵심 인사이트 · </strong>${d.insight}`;
+}
+function renderLearningActions(){
+  const actions=[
+    {color:'var(--teal)',title:'출석률 알람 설정',body:'체험 2일차까지 출석률 0%인 고객은 즉각 연락 대상입니다. 출석률 90% 이상이면 결제 제안을 즉시 준비하세요.'},
+    {color:'var(--purple2)',title:'완료 학습 수 추적',body:'"계획한 학습 수"보다 "완료한 학습 수"를 봐야 합니다. 5개 이상 완료한 고객은 수행률 관리에 들어가세요.'},
+    {color:'var(--amber)',title:'4시간 학습 = 전환 기준',body:'체험 기간 중 총 4시간 이상 학습한 고객은 결제율 22%+ 구간. 학습시간이 이 기준에 다가올 때 결제 제안 타이밍입니다.'},
+
+    {color:'var(--blue)',title:'자유·실력평가 코스 유도',body:'표준 커리큘럼보다 "실력평가", "자유" 코스를 경험한 고객의 결제율이 2배 높습니다. 온보딩 시 실력 확인 학습을 먼저 권유하세요.'},
+    {color:'var(--teal)',title:'영어·사회·과학 고관심층',body:'영어(19.6%), 사회(16.7%), 과학(16.4%) 과목 체험자의 결제율이 상대적으로 높습니다. 해당 과목 콘텐츠를 체험 초반에 경험하게 유도하세요.'},
+  ];
+  const el=document.getElementById('learningActions'); el.innerHTML='';
+  actions.forEach(a=>{
+    const div=document.createElement('div');
+    div.style.cssText=`background:var(--s2);border:1px solid var(--b1);border-radius:var(--radius-sm);padding:12px 14px;border-left:2px solid ${a.color}`;
+    div.innerHTML=`<div style="font-size:12px;font-weight:500;color:var(--t1);margin-bottom:4px">${a.title}</div><div style="font-size:11px;color:var(--t2);line-height:1.65">${a.body}</div>`;
+    el.appendChild(div);
+  });
+}
+renderAttendBars();renderPerformBars();renderTimeBars();
+renderSubjectBars();renderCourseBars();renderLearningActions();
+
+
+// ── GRADE PAGE ──────────────────────────────────────
+const GRADE_INSIGHTS = {"리틀_유아(4~5세)": {"rate": "6.4%", "n": 1506, "paid": 96, "needs": "한글 기초(자음·모음, 받침), 수 개념(한 자리 덧셈 수준), 영어 알파벳 시작 등 가장 기초적인 학습 첫 단계를 찾는 경우가 대부분입니다. 상담 전체에서 가장 많이 등장하는 패턴은 ’엄마표 학습 중인데 뭔가 체계적인 것을 찾고 싶다’, ’유튜브 대신 학습 콘텐츠를 접하게 하고 싶다’는 니즈입니다. 구몬·웅진·한솔·슈퍼브이 등 기존 서비스와 비교 체험이 동시에 진행되는 경우가 많습니다.", "diff": "① 첫 통화는 아이 이름을 부르며 짧게 인사하는 것으로 시작하세요. \"○○이 지금 어떤 걸 제일 좋아해요?\"로 아이 관심사를 파악하면 콘텐츠 추천이 쉬워집니다. ② 아버지 반대가 있는 경우 억지로 설득하지 마세요. 대신 \"아이가 직접 해보고 재미있어 하면 다시 말씀 나눠보시겠어요?\"로 여지를 남기세요. ③ 형제(초등)가 있으면 첫 상담에서 형제 할인과 '리틀→초등 연속 사용' 메시지를 함께 안내하세요.", "risk": "미결제자 상담에서 가장 많이 반복되는 패턴은 ’아버지(부)가 패드 미디어 노출에 반대’, ’아이가 직접 싫다고 함’, ’기존 서비스(구몬·슈퍼브이·토도) 약정 남아있음’, ’지금은 엄마표로 하겠다’입니다. 이 연령대는 학부모 두 명의 합의가 필요한 경우가 많아 한쪽이 반대하면 결제로 이어지지 않는 구조입니다.", "convert": "결제자 상담에서는 리틀 전용 지면 교재 발송과 ’초등으로 연결되는 연속성’을 설명한 이후, 이번 달 혜택 마감을 안내하는 흐름이 반복됩니다. 특히 첫째가 초등 홈런을 하고 있는 가정에서 둘째 리틀을 형제 할인으로 묶어 동시 등록하는 패턴이 결제 전환에 효과적입니다."}, "리틀_취학준비(6~7세)": {"rate": "7.5%", "n": 2880, "paid": 217, "needs": "초등 입학을 앞두고 ’한글 받침’, ’두 자리 덧셈’, ’영어 알파벳’ 등 취학 준비 수준을 확인하고 싶은 니즈가 가장 많습니다. 상담 기록 전체에서 ’예비 초등’, ’초등 준비’, ’입학 전에’ 표현이 반복됩니다. 신기한 한글나라·슈퍼브이·윙크·한솔 등과 동시 비교 체험이 많고, 이미 한 가지 서비스를 사용 중이면서 교체나 추가 여부를 확인하는 경우도 많습니다.", "diff": "① \"입학 준비 어느 정도 되셨어요?\"로 시작해 한글·수·영어 수준을 파악하세요. 수준에 맞는 콘텐츠를 바로 보여주는 것이 신뢰를 만듭니다. ② 타사 약정이 남아있는 경우 \"몇 월에 끝나세요?\"로 종료 시점을 확인하고 캘린더에 기록하세요. 약정 종료 2주 전에 먼저 연락하는 것이 가장 효과적입니다. ③ 결정을 3월 이후로 미루는 경우, \"입학 전에 학습 습관 잡으면 1학년 적응이 달라져요\"로 지금 시작해야 하는 이유를 구체적으로 제시하세요.", "risk": "미결제자 상담에서 ’타사 약정 남아있음’, ’아이가 패드 보여준 적 없어서 반응 모름’, ’3월 이후에 다시 연락달라’, ’부 반대’, ’아이가 싫다고 함’ 패턴이 반복됩니다. 특히 이전 체험에서 아이가 싫증을 냈던 경험이 있는 가정은 다시 결제로 이어지기 어렵습니다.", "convert": "결제자 상담에서는 ’초등 올라갈 때도 이 기기로 계속 쓸 수 있다’는 연속성 메시지와, 아이가 직접 공룡·동화 등 흥미 있는 콘텐츠를 탐색한 직후 ’이번 달 혜택 마감’을 안내하는 흐름이 반복됩니다. 첫째가 초등 홈런을 하는 가정에서 막내 취학 준비 연계 등록으로 연결되는 패턴도 효과적입니다."}, "초등_저학년(1~2학년)": {"rate": "14.7%", "n": 2899, "paid": 425, "needs": "국어·수학·영어 전과목을 집에서 관리하고 싶은 워킹맘 니즈가 가장 많습니다. ’학원 대신 집에서 할 수 있는 것’, ’아이가 혼자서 할 수 있는 것’을 찾는 표현이 많고, 기존에 윙크·웅진·눈높이·빨간펜 등을 했거나 끝난 이후 대체재를 찾는 경우가 많습니다. 사은품 목적으로 신청했다고 직접 밝히는 경우도 상당수 존재합니다.", "diff": "① 사은품 목적 신청 여부는 첫 통화 2분 안에 파악하세요. \"어떤 부분이 궁금하셔서 신청하셨어요?\"에 학습 관련 답변이 없으면 의향 낮음으로 분류하세요. ② 워킹맘인 경우 \"퇴근 후 아이 혼자 할 수 있는 구조예요\"를 강조하세요. 관리 교사가 매일 피드백한다는 점도 함께 안내하세요. ③ D+2에 출석 기록 확인 후 긍정이면 그날 AI 진단평가를 함께 풀어보도록 유도하고, 결과를 보여주며 \"여기서 잡으면 3학년이 달라져요\"로 이어가세요.", "risk": "미결제자 상담에서 ’패드 학습인지 몰랐다’, ’아이 기질이 충동적이라 안 맞는다’, ’공부방으로 보내는 게 낫겠다’, ’해외 출장·여행으로 체험 못함’, ’사은품 목적 신청이라 학습 의향 없음’ 패턴이 반복됩니다. 로그인 기록이 체험 2일 이내에 없으면 이탈 가능성이 매우 높습니다.", "convert": "결제자 상담에서는 서술형 평가·단원평가·기초학력 진단평가를 체험 중 직접 해보고 학부모가 ’학교 수업이랑 연계가 확실하다’는 납득을 한 직후 결제가 이루어집니다. 웅진·밀크티 등 기존 서비스 종료 시점에 맞춰 교체를 유도하는 타이밍 접근도 효과적입니다."}, "초등_중학년(3~4학년)": {"rate": "18.5%", "n": 1959, "paid": 363, "needs": "전체 학년 중 결제율이 가장 높은 구간입니다. ’국영수는 학원에서 하는데 사회·과학·역사·한국사가 빠진다’는 과목 보완 니즈가 가장 많고, ’학원비 부담되는데 집에서 자기주도로 할 수 있는 것’을 찾는 표현도 많습니다. EBS·눈높이·구몬에서 교체를 검토하거나, 엘리하이·온리원·밀크티와 동시 비교 체험 중인 경우가 많습니다.", "diff": "① \"국어·수학은 어디서 하고 계세요?\"로 현재 학원 현황을 먼저 파악하세요. 학원 있으면 \"사회·과학·역사는 따로 보고 계세요?\"로 빈 과목을 공략하세요. ② AI 진단평가를 D+1~D+2에 직접 풀어보게 하고, 결과 화면을 학부모와 함께 보세요. \"이 부분이 약하네요, 교과서 순서로 채워드릴게요\"가 결제 결심을 만드는 핵심 멘트입니다. ③ 결제를 미루는 학부모에게는 \"지금 혜택이 이번 주까지예요\"보다 \"이번 학기 안에 시작해야 다음 학년 준비가 돼요\"가 더 효과적입니다.", "risk": "미결제자 상담에서 ’학원 새로 시작해서 적응 보고’, ’남편과 상의 후 결정’, ’엘리하이·온리원도 체험 중이라 비교 후 결정’, ’아이가 패드 학습 싫어한다’, ’방학 끝나고 연락달라’ 패턴이 반복됩니다. 새 학기 시작 직후와 방학 기간은 결정이 가장 많이 미뤄지는 타이밍입니다.", "convert": "결제자 상담에서는 ’전국 초등학교 선생님 90%가 아이스크림 사용한다’, ’교과서 출판사 설정이 가능하다’는 학교 연계 신뢰 메시지 이후, 체험 종료일 하루 전 혜택 재안내 문자를 발송하는 흐름이 반복됩니다. 역사·한국사·사회 콘텐츠를 직접 체험하고 아이가 재미있어 한 직후가 결정적 전환 포인트입니다."}, "초등_고학년(5~6학년)": {"rate": "16.4%", "n": 1008, "paid": 165, "needs": "중학교 준비에 대한 불안이 본격적으로 등장합니다. ’영수는 학원 다니는데 국사과가 빠진다’, ’중학교 내신 대비를 미리 시작하고 싶다’, ’중등 콘텐츠도 미리 볼 수 있냐’는 표현이 많습니다. 6학년은 ’고1까지만이라 기간이 짧다’는 현실적 고민도 등장합니다. 엘리하이·밀크티·온리원 등 경쟁사 체험과 동시 비교하는 경우가 많고, 기존 서비스(웅진·엘리하이)가 종료된 이후 교체 검토 사례도 많습니다.", "diff": "① 아이와 직접 통화하는 것이 중요합니다. 학부모만 설득해서는 이 학년은 잘 안 됩니다. \"○○이는 어떤 과목이 제일 어려워?\"로 아이 본인의 고민을 먼저 듣세요. ② 중등 콘텐츠 화면을 직접 보여주세요. \"지금 체험기로 중학교 과정도 미리 볼 수 있어요\"가 이 학년 학부모에게 가장 강한 설득 포인트입니다. ③ 6학년은 \"고1까지밖에 안 된다\"는 가성비 의문을 먼저 해소하세요. \"3년 동안 중학교 내신 관리가 되는 구조예요\"로 전환하세요.", "risk": "미결제자 상담에서 ’아이가 학원 선호해서 패드 싫어한다’, ’6학년이라 기간이 너무 짧다’, ’카드·포인트 혜택만 보고 신청했다’, ’엘리하이 약정 2년 남음’, ’아이가 학원 다녀오면 지쳐서 못한다’ 패턴이 반복됩니다. 이 학년대는 아이 본인의 의사가 학부모보다 결제에 더 강하게 작용합니다.", "convert": "결제자 상담에서는 중등 콘텐츠 화면을 직접 보여주고 ’지금 시작해야 중학교 올라갈 때 습관이 잡힌다’는 메시지를 전달한 직후, 형제 중 저학년과 함께 형제 할인으로 동시 등록하는 흐름이 효과적입니다. 웅진·밀크티 약정이 종료된 직후가 교체 타이밍으로 최적입니다."}, "중등(중1~3)": {"rate": "17.6%", "n": 455, "paid": 80, "needs": "영수는 학원에서 하고, 국어·사회·과학·역사 등 암기과목을 집에서 보완하려는 니즈가 가장 명확합니다. ’교과서 출판사 설정이 되냐’, ’시험 범위에 맞게 설정 가능하냐’, ’내신 대비가 되냐’는 질문이 많고, EBS 연계 여부와 단기 강의 여부도 자주 확인합니다. 엠베스트·밀크티·온리원·스마트올과 비교 중인 경우가 많고, 기존 서비스 약정이 끝나는 시점에 교체를 검토하는 패턴도 있습니다.", "diff": "① 첫 통화에서 교과서 출판사를 반드시 확인하고 그 자리에서 설정해 주세요. \"창비예요? 그럼 지금 설정해 드릴게요\"가 전문성 신뢰를 만듭니다. ② 아이 본인과 직접 통화하세요. \"어떤 과목이 제일 힘들어?\"로 시작해 그 과목 콘텐츠를 직접 체험하게 하세요. 아이가 직접 써보고 괜찮다고 하면 학부모 결제로 연결됩니다. ③ 중3에게는 \"고1까지만\"이 아닌 \"중3 2학기 내신이 고등 첫 성적에 영향을 줘요\"로 지금 당장의 필요성을 강조하세요.", "risk": "미결제자 상담에서 ’엠베스트인 줄 알고 신청했다’, ’신세계 상품권 언제 오냐고 먼저 물어본다’, ’아이가 공부 안 하려고 한다’, ’기말고사 끝나고 연락달라’, ’중3이라 고1까지밖에 안 된다’ 패턴이 반복됩니다. 표본 455명으로 소규모라 패턴 해석에 주의가 필요합니다.", "convert": "결제자 상담에서는 교과서 출판사 설정 가능 여부를 확인시켜 준 후, ’지금 내신 습관 안 잡으면 고등학교 가서 힘들다’는 위기의식 메시지가 중등 학부모에게 가장 강하게 작용합니다. 초등 시절 홈런을 했던 만료 회원에게 재등록을 권유할 때 ’기기 보유 20% 할인’을 함께 안내하는 흐름이 효과적입니다."}};;
+
+const GRADE_GROUPS = [
+  {key:'리틀_유아(4~5세)',       label:'리틀 유아',      sub:'4~5세',   c:'#5b9cf6'},
+  {key:'리틀_취학준비(6~7세)',   label:'리틀 취학준비',  sub:'6~7세',   c:'#7c6ef5'},
+  {key:'초등_저학년(1~2학년)',   label:'초등 저학년',    sub:'1~2학년', c:'#2dd4a0'},
+  {key:'초등_중학년(3~4학년)',   label:'초등 중학년',    sub:'3~4학년', c:'#f5a623'},
+  {key:'초등_고학년(5~6학년)',   label:'초등 고학년',    sub:'5~6학년', c:'#f07060'},
+  {key:'중등(중1~3)',            label:'중등',           sub:'중1~3',   c:'#ba7517'},
+];
+let selGrade = 0;
+
+function renderGradeGrid(){
+  const el = document.getElementById('gradeGrid');
+  if(!el) return;
+  el.innerHTML = '';
+  GRADE_GROUPS.forEach(function(g, i){
+    const d = GRADE_INSIGHTS[g.key];
+    const btn = document.createElement('div');
+    btn.className = 'ch-btn';
+    const isActive = i === selGrade;
+    btn.style.borderColor = isActive ? g.c : 'rgba(255,255,255,0.10)';
+    btn.style.background = isActive ? g.c + '20' : 'var(--s2)';
+    btn.innerHTML =
+      '<div class="ch-btn-name">' + g.label + '</div>' +
+      '<div class="ch-btn-rate" style="color:' + g.c + '">' + d.rate + '</div>' +
+      '<div class="ch-btn-n">결제 ' + d.paid + '명 / 전체 ' + d.n + '</div>';
+    btn.onclick = function(){ selGrade = i; renderGradeGrid(); renderGradeDetail(); };
+    el.appendChild(btn);
+  });
+}
+
+function renderGradeDetail(){
+  const g = GRADE_GROUPS[selGrade];
+  const d = GRADE_INSIGHTS[g.key];
+  const el = document.getElementById('gradeDetail');
+  if(!el) return;
+  const rc = parseFloat(d.rate) >= 15 ? 'var(--teal)' : parseFloat(d.rate) >= 10 ? 'var(--amber)' : 'var(--coral)';
+  const cautionHtml = (g.key === '중등(중1~3)') ?
+    '<div class="warn-box" style="margin-bottom:12px"><strong style="color:var(--coral)">표본 주의 &middot;</strong> 중등은 455명(결제 80명)으로 표본이 작습니다. 방향성 참고용으로 활용하세요.</div>' : '';
+  el.innerHTML =
+    '<div class="sub-section">' +
+      '<div class="sub-header">' +
+        '<div class="sub-dot" style="background:' + g.c + '"></div>' +
+        '<div class="sub-title">' + g.label + ' <span style="font-size:13px;color:var(--t3);font-weight:400">(' + g.sub + ')</span></div>' +
+        '<div class="sub-stats">' +
+          '<div class="sub-stat"><div class="sub-stat-val" style="color:' + rc + '">' + d.rate + '</div><div class="sub-stat-lbl">결제율</div></div>' +
+          '<div class="sub-stat"><div class="sub-stat-val" style="color:var(--t1)">' + d.paid + '</div><div class="sub-stat-lbl">결제자</div></div>' +
+          '<div class="sub-stat"><div class="sub-stat-val" style="color:var(--t2)">' + d.n + '</div><div class="sub-stat-lbl">전체</div></div>' +
+        '</div>' +
+      '</div>' +
+      cautionHtml +
+      '<div class="ins-grid">' +
+        '<div class="ins-card" style="border-left-color:#5b9cf6">' +
+          '<div class="ins-section-title" style="color:#5b9cf6">주요 학습 니즈</div>' +
+          '<div class="ins-text">' + d.needs + '</div>' +
+        '</div>' +
+        '<div class="ins-card" style="border-left-color:#2dd4a0">' +
+          '<div class="ins-section-title" style="color:#2dd4a0">결제자 VS 미결제자 차이</div>' +
+          '<div class="ins-text">' + d.diff + '</div>' +
+        '</div>' +
+        '<div class="ins-card" style="border-left-color:#f07060">' +
+          '<div class="ins-section-title" style="color:#f07060">이탈 위험 신호</div>' +
+          '<div class="ins-text">' + d.risk + '</div>' +
+        '</div>' +
+        '<div class="ins-card" style="border-left-color:#f5a623">' +
+          '<div class="ins-section-title" style="color:#f5a623">전환 결정적 순간</div>' +
+          '<div class="ins-text">' + d.convert + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+}
+renderGradeGrid();
+renderGradeDetail();
+
+
+</script>
+
+</body>
+</html>
